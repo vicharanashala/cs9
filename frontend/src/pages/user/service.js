@@ -35,7 +35,7 @@ export function normalizeQuestion(q, currentUserId) {
   return {
     id:         q.question_id,
     upvotes:    q.upvotes ?? 0,
-    hasUpvoted: Array.isArray(q.upvoted_by) && q.upvoted_by.includes(currentUserId),
+    hasUpvoted: q.hasVoted === true,
     author:     isSelf ? 'self' : 'other',
     authorName: isSelf ? 'You' : (q.author_name || 'User'),
     timestamp:  new Date(q.created_at).getTime(),
