@@ -163,6 +163,11 @@ export async function fetchUserContributions(userId, limit = 10) {
   return data
 }
 
+export async function fetchMyContributions() {
+  const { data } = await axisPrivate().get('/api/users/me/contributions?limit=100')
+  return data
+}
+
 export async function logoutUser() {
   await axisPrivate().post('/api/auth/logout')
 }
