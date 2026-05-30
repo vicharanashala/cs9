@@ -259,7 +259,7 @@ function DashboardPage() {
                 <Button
                   variant="secondary"
                   className="mt-2 w-full"
-                  onClick={() => setSelectedQueryId(null)}
+                  onClick={() => navigate('/dashboard')}
                 >
                   See all contribution
                 </Button>
