@@ -3,6 +3,7 @@ import {
   Menu, MenuButton, MenuItems, MenuItem,
 } from '@headlessui/react'
 import { Settings, Search, SlidersHorizontal, PlusCircle, Bell, LogOut, Moon, Sun } from 'lucide-react'
+import { timeAgo } from '../../service'
 import Button from '../../../../components/Button/Button'
 
 function DashboardHeader({
@@ -15,14 +16,15 @@ function DashboardHeader({
   isDark,
   onSearchOpen,
   onRaiseQuery,
-  onNotifOpen,
+  onNotifOpen,        // bell click — opens the small dropdown preview
+  onNotifViewAll,    // "View All" click — opens the full NotificationModal
   onDarkToggle,
   onProfileSettings,
   onLogout,
 }) {
   return (
     <header className="relative flex items-center justify-between border-b border-[#c4c7c7] bg-white px-8 py-4">
-      {/* Search trigger — opens modal in DashboardPage */}
+      {/* Search trigger */}
       <button
         type="button"
         className="flex w-[420px] items-center gap-2 rounded-lg bg-[#edeeef] px-3 py-2 text-left text-[12px] text-[#747878] transition hover:text-[#191c1d]"
@@ -64,21 +66,25 @@ function DashboardHeader({
             {notifications.length === 0 ? (
               <p className="px-4 py-5 text-center text-[12px] text-[#747878]">No notifications yet</p>
             ) : (
-              notifications.map(n => (
+              notifications.slice(0, 3).map(n => (
                 <div
                   key={n.notification_id || n.id}
                   className={`border-b border-[#f3f4f6] px-4 py-3 ${n.is_read ? 'bg-white' : 'bg-[#f0f9ff]'}`}
                 >
                   <p className="mb-1 text-[12px] leading-snug text-[#444748]">{n.body || n.title}</p>
                   <span className="text-[10px] font-medium text-[#9ca3af]">
-                    {n.created_at ? new Date(n.created_at).toLocaleString() : ''}
+                    {n.created_at ? timeAgo(n.created_at) : ''}
                   </span>
                 </div>
               ))
             )}
-            <div className="cursor-pointer bg-[#f8f9fa] py-2.5 text-center text-[11px] font-semibold text-[#191c1d] transition hover:bg-[#edeeef]">
+            <button
+              type="button"
+              onClick={onNotifViewAll}
+              className="w-full cursor-pointer bg-[#f8f9fa] py-2.5 text-center text-[11px] font-semibold text-[#8c6a40] transition hover:bg-[#edeeef]"
+            >
               View All
-            </div>
+            </button>
           </PopoverPanel>
         </Popover>
 
