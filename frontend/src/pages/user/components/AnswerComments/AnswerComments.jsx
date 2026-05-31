@@ -46,27 +46,27 @@ function AnswerComments({ answerId, comments = [], currentUserId, locked = false
   }
 
   const replyBox = (parentId) => (
-    <div className="mt-2 flex items-start gap-2">
+    <div className="mt-3.5 flex items-start gap-3">
       <textarea
         autoFocus
         value={value}
         onChange={e => setValue(e.target.value)}
         placeholder="Write a reply…"
-        className="min-h-[44px] w-full resize-y rounded-lg border border-[#e5e7eb] p-2.5 text-[12px] leading-5 text-[#191c1d] outline-none transition focus:border-[#8c6a40] focus:ring-2 focus:ring-[#8c6a40]/15"
+        className="min-h-[48px] w-full resize-y rounded-lg border border-border bg-card p-3 text-sm leading-relaxed text-foreground outline-none transition duration-200 focus:border-primary focus:ring-2 focus:ring-primary/20"
       />
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-1.5 shrink-0">
         <button
           type="button"
           onClick={() => submit(parentId)}
           disabled={busy}
-          className="rounded-md bg-[#8c6a40] px-3 py-1.5 text-[11px] font-semibold text-white transition hover:bg-[#7a5c35] disabled:opacity-60"
+          className="rounded-lg bg-primary px-4 py-2 text-[11px] font-bold uppercase tracking-wider text-primary-foreground shadow-sm transition hover:bg-primary/95 disabled:opacity-60 active:scale-95 cursor-pointer"
         >
           {busy ? '…' : 'Reply'}
         </button>
         <button
           type="button"
           onClick={() => setReplyTo(null)}
-          className="rounded-md px-3 py-1.5 text-[11px] font-medium text-[#6b7280] transition hover:text-[#191c1d]"
+          className="rounded-lg border border-border bg-card px-4 py-2 text-[11px] font-bold uppercase tracking-wider text-muted-foreground transition hover:bg-secondary hover:text-foreground active:scale-95 cursor-pointer"
         >
           Cancel
         </button>
@@ -83,30 +83,32 @@ function AnswerComments({ answerId, comments = [], currentUserId, locked = false
       : `This comment from ${c.author_name} is under review.`
 
     return (
-      <div className={`flex gap-2.5 ${isReply ? 'ml-7' : ''}`}>
-        <div className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white ${hidden ? 'bg-[#9ca3af]' : 'bg-[#191c1d]'}`}>
+      <div className={`flex gap-3 ${isReply ? 'ml-8' : ''}`}>
+        <div className={`mt-0.5 flex h-7.5 w-7.5 shrink-0 items-center justify-center rounded-full text-xs font-bold border border-border/40 shadow-sm ${
+          hidden ? 'bg-muted text-muted-foreground' : 'bg-secondary text-foreground'
+        }`}>
           {initialsOf(c.author_name)}
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-2">
-            <span className="text-[12px] font-semibold text-[#191c1d]">
+            <span className="text-sm font-bold text-foreground">
               {c.author_name}{isSelf && ' (You)'}
             </span>
-            <span className="text-[10px] text-[#9ca3af]">{fmtDate(c.created_at)}</span>
+            <span className="text-[11px] font-semibold text-muted-foreground">{fmtDate(c.created_at)}</span>
           </div>
           {hidden ? (
-            <p className="text-[12px] italic leading-5 text-[#9ca3af]">{tombstone}</p>
+            <p className="text-sm italic leading-relaxed text-muted-foreground mt-1">{tombstone}</p>
           ) : (
-            <p className="text-[12px] leading-5 text-[#4b5563]" dangerouslySetInnerHTML={{ __html: c.body }} />
+            <p className="text-sm leading-relaxed text-foreground/90 mt-1" dangerouslySetInnerHTML={{ __html: c.body }} />
           )}
           {/* Only visible top-level comments can receive a (one-level) reply */}
           {!isReply && !hidden && !locked && (
             <button
               type="button"
               onClick={() => openReply(c.comment_id)}
-              className="mt-1 flex items-center gap-1 text-[11px] font-medium text-[#9ca3af] transition hover:text-[#8c6a40]"
+              className="mt-2 flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground/80 transition hover:text-primary active:scale-95 cursor-pointer"
             >
-              <CornerDownRight className="h-3 w-3" strokeWidth={1.8} /> Reply
+              <CornerDownRight className="h-3.5 w-3.5" strokeWidth={2} /> Reply
             </button>
           )}
           {replyTo === c.comment_id && replyBox(c.comment_id)}
@@ -116,11 +118,11 @@ function AnswerComments({ answerId, comments = [], currentUserId, locked = false
   }
 
   return (
-    <div className="border-t border-[#f3f4f6] bg-white px-5 py-4">
+    <div className="border-t border-border bg-card/45 px-5 py-4.5 rounded-b-xl">
       {topLevel.length > 0 && (
-        <div className="mb-3 flex flex-col gap-4">
+        <div className="mb-4 flex flex-col gap-4">
           {topLevel.map(c => (
-            <div key={c.comment_id} className="flex flex-col gap-3">
+            <div key={c.comment_id} className="flex flex-col gap-4">
               {commentRow(c, false)}
               {repliesOf(c.comment_id).map(r => (
                 <div key={r.comment_id}>{commentRow(r, true)}</div>
@@ -138,10 +140,10 @@ function AnswerComments({ answerId, comments = [], currentUserId, locked = false
           <button
             type="button"
             onClick={() => openReply('root')}
-            className="flex items-center gap-1.5 text-[11px] font-semibold text-[#9ca3af] transition hover:text-[#8c6a40]"
+            className="flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-muted-foreground/80 transition hover:text-primary active:scale-95 cursor-pointer"
           >
-            <MessageSquare className="h-3.5 w-3.5" strokeWidth={1.8} />
-            {topLevel.length > 0 ? 'Add a comment' : 'Comment'}
+            <MessageSquare className="h-4 w-4" strokeWidth={1.8} />
+            {topLevel.length > 0 ? 'ADD COMMENT' : 'COMMENT'}
           </button>
         )
       )}

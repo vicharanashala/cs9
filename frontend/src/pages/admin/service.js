@@ -18,3 +18,13 @@ export async function markAllAdminNotificationsRead() {
 export async function logoutAdmin() {
   await axisPrivate().post('/api/auth/logout')
 }
+
+export async function sendAdminNotification(payload) {
+  const { data } = await axisPrivate().post('/api/admin/notifications/send', payload)
+  return data
+}
+
+export async function fetchUsersList(search = '') {
+  const { data } = await axisPrivate().get(`/api/users?limit=100&search=${encodeURIComponent(search)}`)
+  return data
+}

@@ -26,18 +26,18 @@ function Select({
         {/* Trigger */}
         <ListboxButton
           className={({ open }) =>
-            `flex h-11 w-full items-center justify-between rounded-lg border bg-white px-4 text-[13px] transition focus:outline-none ${
+            `flex h-11 w-full items-center justify-between rounded-lg border bg-card px-4 text-sm text-foreground transition focus:outline-none hover:border-primary/50 ${
               open
-                ? 'border-[#8c6a40] ring-1 ring-[#8c6a40]/15'
-                : 'border-[#d1d5db] focus:border-black focus:ring-1 focus:ring-black'
-            } ${selected ? 'text-[#191c1d]' : 'text-[#9da1a1]'}`
+                ? 'border-primary ring-2 ring-primary/20'
+                : 'border-border focus:border-primary focus:ring-2 focus:ring-primary/20'
+            } ${selected ? 'text-foreground' : 'text-muted-foreground'}`
           }
         >
           {({ open }) => (
             <>
               <span>{selected ? selected.label : placeholder}</span>
               <ChevronDown
-                className={`h-4 w-4 shrink-0 text-[#9ca3af] transition-transform ${open ? 'rotate-180' : ''}`}
+                className={`h-4.5 w-4.5 shrink-0 text-muted-foreground transition-transform ${open ? 'rotate-180 text-primary' : ''}`}
                 strokeWidth={1.8}
               />
             </>
@@ -45,23 +45,23 @@ function Select({
         </ListboxButton>
 
         {/* Dropdown */}
-        <ListboxOptions className="absolute left-0 top-full z-50 mt-1 w-full rounded-lg border border-[#d1d5db] bg-white py-1 shadow-lg focus:outline-none">
+        <ListboxOptions className="absolute left-0 top-full z-50 mt-1 w-full rounded-lg border border-border bg-popover py-1 shadow-xl focus:outline-none animate-in fade-in slide-in-from-top-2 duration-150">
           {options.map(opt => (
             <ListboxOption
               key={opt.value}
               value={opt.value}
               className={({ selected: isSel }) =>
-                `flex w-full cursor-pointer items-center justify-between px-4 py-2.5 text-[13px] transition ${
+                `flex w-full cursor-pointer items-center justify-between px-4 py-2.5 text-sm transition ${
                   isSel
-                    ? 'bg-[#8c6a40]/5 text-[#8c6a40]'
-                    : 'text-[#444748] data-[focus]:bg-[#f3f4f6]'
+                    ? 'bg-primary/10 text-primary font-bold'
+                    : 'text-foreground hover:bg-secondary'
                 }`
               }
             >
               {({ selected: isSel }) => (
                 <>
                   {opt.label}
-                  {isSel && <Check className="h-3.5 w-3.5" strokeWidth={2} />}
+                  {isSel && <Check className="h-4 w-4 text-primary" strokeWidth={2} />}
                 </>
               )}
             </ListboxOption>

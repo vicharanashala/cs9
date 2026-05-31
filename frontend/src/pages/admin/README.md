@@ -10,7 +10,7 @@ Admin-only SPA at `/admin`. Protected by `ProtectedRoute(requiredRole='ADMIN')`.
 | `queriesManagement` | `pages/QueriesManagement` | Community question list |
 | `sparkLeaderboard` | `pages/SparkLeaderboard` | Spark points leaderboard (live) |
 | `faqManagement` | `pages/FAQManagement` | FAQ content view |
-| `adminProfile` | `pages/AdminProfile` | Profile settings |
+| `adminProfile` | `pages/AdminProfile` | Profile settings — **no sidebar tab**; accessed via header user menu |
 
 ## File Structure
 
@@ -21,10 +21,11 @@ admin/
 ├── README.md                   # This file
 │
 ├── components/
+│   ├── README.md               # Header + LeftPane component docs
 │   ├── Header/
-│   │   └── AdminHeader.jsx     # Top bar — search, notifications, avatar menu
+│   │   └── AdminHeader.jsx     # Top bar — search, notifications, user menu
 │   └── LeftPane/
-│       └── AdminLeftPane.jsx   # Sidebar nav — 5 items
+│       └── AdminLeftPane.jsx   # Sidebar nav — 4 items (no Profile tab)
 │
 └── pages/
     ├── Dashboard/
@@ -36,7 +37,7 @@ admin/
     ├── FAQManagement/
     │   └── index.jsx
     └── AdminProfile/
-        └── index.jsx           # Name/bio edit + password change
+        └── index.jsx           # Profile settings — header menu only, no sidebar tab
 ```
 
 ## Key Design Notes
@@ -45,7 +46,8 @@ admin/
 - `viewProps` (`dashboardData`, `isLoading`, `searchQuery`, `onRefresh`) passed to every view
 - Spark leaderboard fetches from `GET /api/leaderboard?type=spark&limit=20` (shared `user/service.js`)
 - Profile settings use `fetchProfile`, `updateProfile`, `changePassword` from `user/service.js`
-- Admin left pane uses `User` icon for Profile, `Zap` icon for Spark
+- Admin left pane uses `Zap` icon for Spark. **Profile has no sidebar tab** — accessed via the user menu in the header (same as user section).
+- `AdminHeader` exposes `onProfileSettings` callback → shell sets `currentAdminView = 'adminProfile'`
 
 ## API Integration Status
 

@@ -151,20 +151,20 @@ function QueryDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-1 items-center justify-center p-10 text-[13px] text-[#747878]">
-        <Loader className="mr-2 h-4 w-4 animate-spin" /> Loading thread…
+      <div className="flex flex-1 items-center justify-center p-16 text-sm text-muted-foreground bg-background animate-fade-in-up">
+        <Loader className="mr-2.5 h-5 w-5 animate-spin text-primary" /> Loading thread details…
       </div>
     )
   }
 
   if (!data?.question) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-4 p-10">
-        <p className="text-[13px] text-[#747878]">This query could not be found.</p>
+      <div className="flex flex-1 flex-col items-center justify-center gap-4 p-16 text-foreground bg-background animate-fade-in-up">
+        <p className="text-sm text-muted-foreground">This query could not be found.</p>
         <button
           type="button"
           onClick={() => navigate('/dashboard')}
-          className="flex items-center gap-2 text-[13px] font-medium text-[#8c6a40] transition hover:underline"
+          className="flex items-center gap-2 text-sm font-semibold text-primary transition hover:underline focus:outline-none"
         >
           <ArrowLeft className="h-4 w-4" strokeWidth={1.8} /> Back to dashboard
         </button>
@@ -191,14 +191,23 @@ function QueryDetailPage() {
   ]
 
   return (
-    <div className="relative mx-auto w-full max-w-[1100px] px-8 py-8">
-      <div className="flex gap-10">
+    <div className="relative mx-auto w-full max-w-[1100px] px-8 py-8 text-foreground animate-fade-in-up">
+      {/* Back link */}
+      <button
+        type="button"
+        onClick={() => navigate('/dashboard')}
+        className="mb-6 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground transition hover:text-foreground focus:outline-none"
+      >
+        <ArrowLeft className="h-4 w-4" strokeWidth={2} /> Back to dashboard
+      </button>
+
+      <div className="flex flex-col lg:flex-row gap-8">
         {/* ── Main column ─────────────────────────────────────────── */}
         <div className="min-w-0 flex-1">
           {/* Header */}
           <div className="mb-10">
-            <div className="mb-4 flex items-start justify-between gap-4">
-              <h1 className="font-display text-[28px] font-bold leading-tight text-[#191c1d]">
+            <div className="mb-4 flex items-start justify-between gap-6">
+              <h1 className="font-display text-2xl font-bold leading-tight text-foreground sm:text-3xl">
                 {question.title}
               </h1>
               {/* Owner: mark solved / reopen */}
@@ -206,7 +215,7 @@ function QueryDetailPage() {
                 isResolved ? (
                   <Button
                     variant="secondary"
-                    className="shrink-0 gap-2 text-[12px]"
+                    className="shrink-0 gap-2 text-xs py-1.5"
                     onClick={() => handleResolveToggle(false)}
                   >
                     <RotateCcw className="h-3.5 w-3.5" strokeWidth={1.8} /> Reopen
@@ -214,7 +223,7 @@ function QueryDetailPage() {
                 ) : (
                   <Button
                     variant="secondary"
-                    className="shrink-0 gap-2 border-[#8c6a40] text-[12px] text-[#8c6a40] hover:border-[#6b5230] hover:text-[#6b5230]"
+                    className="shrink-0 gap-2 border-primary/40 text-xs text-primary hover:border-primary hover:bg-primary/5 py-1.5"
                     onClick={() => handleResolveToggle(true)}
                   >
                     <CheckCircle className="h-3.5 w-3.5" strokeWidth={1.8} /> Mark as Solved
@@ -222,22 +231,22 @@ function QueryDetailPage() {
                 )
               )}
             </div>
-            <div className="flex flex-wrap items-center gap-4 text-[13px] text-[#4b5563]">
-              <span className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-bold ${
-                isResolved ? 'bg-[#dcfce7] text-[#166534]' : 'bg-[#8c6a40]/10 text-[#8c6a40]'
+            <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+              <span className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider ${
+                isResolved ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'bg-primary/10 text-primary border border-primary/20'
               }`}>
                 <CheckCircle2 className="h-4 w-4" strokeWidth={1.8} /> {statusLabel}
               </span>
               <span className="flex items-center gap-1.5">
-                <strong className="font-semibold text-[#191c1d]">{question.author_name}</strong>
+                <strong className="font-semibold text-foreground">{question.author_name}</strong>
                 opened this on {fmtDate(question.created_at)}
               </span>
             </div>
           </div>
 
           {/* Thread */}
-          <div className="relative pl-[60px]">
-            <div className="absolute bottom-0 left-6 top-6 w-px bg-[#d1d5db]" aria-hidden="true" />
+          <div className="relative pl-[54px] sm:pl-[60px]">
+            <div className="absolute bottom-0 left-6 top-6 w-px bg-border" aria-hidden="true" />
 
             {/* Original post */}
             <ThreadItem
@@ -248,10 +257,21 @@ function QueryDetailPage() {
               isOriginal
             />
 
-            {/* Answers */}
-            {answers.length === 0 && (
-              <p className="mb-8 text-[13px] text-[#747878]">No replies yet — be the first to respond.</p>
+            {/* Answers Divider */}
+            {answers.length > 0 && (
+              <div className="mb-6 flex items-center justify-between border-b border-border pb-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  {answers.length} {answers.length === 1 ? 'Reply' : 'Replies'}
+                </span>
+              </div>
             )}
+
+            {answers.length === 0 && (
+              <div className="mb-8 rounded-xl border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground animate-pulse">
+                No replies yet — be the first to respond.
+              </div>
+            )}
+
             {answers.map(ans => {
               const moderationState = ans.moderation_state || 'visible'
               const hidden = moderationState !== 'visible'
@@ -288,31 +308,31 @@ function QueryDetailPage() {
             {/* Reply box — closed once the question is resolved */}
             {isResolved ? (
               <div className="relative mt-8">
-                <div className="rounded-xl border border-dashed border-[#c4c7c7] bg-[#f8f9fa] px-5 py-4 text-center text-[13px] text-[#747878]">
+                <div className="rounded-xl border border-dashed border-border bg-secondary/40 px-5 py-4 text-center text-sm text-muted-foreground font-semibold">
                   This question is resolved — new replies are closed.
                 </div>
               </div>
             ) : (
               <div className="relative mt-8">
-                <div className="absolute -left-[54px] top-2.5 flex h-9 w-9 items-center justify-center rounded-lg bg-[#8c6a40] text-[12px] font-bold text-white ring-4 ring-[#f3f4f6]">
+                <div className="absolute -left-[54px] sm:-left-[60px] top-2 flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-sm font-semibold text-foreground border border-border ring-4 ring-background">
                   {initialsOf(user?.name)}
                 </div>
-                <div className="rounded-xl border border-[#e5e7eb] bg-white p-4 shadow-sm">
+                <div className="rounded-xl border border-border bg-card p-4 shadow-sm focus-within:ring-2 focus-within:ring-primary/20 transition-all duration-200">
                   <textarea
                     value={reply}
                     onChange={e => setReply(e.target.value)}
                     placeholder="Drop your resolution, comment, or suggestions here…"
-                    className="min-h-[80px] w-full resize-y text-[13px] leading-6 text-[#191c1d] outline-none placeholder:text-[#9ca3af]"
+                    className="min-h-[100px] w-full resize-y text-sm leading-relaxed text-foreground bg-transparent outline-none placeholder:text-muted-foreground"
                   />
-                  <div className="mt-2 flex justify-end border-t border-[#f3f4f6] pt-4">
-                    <button
+                  <div className="mt-2 flex justify-end border-t border-border/40 pt-4">
+                    <Button
                       type="button"
                       onClick={handlePostReply}
                       disabled={posting}
-                      className="rounded-lg bg-[#8c6a40] px-5 py-2 text-[13px] font-semibold text-white transition hover:bg-[#7a5c35] disabled:cursor-not-allowed disabled:opacity-60"
+                      className="px-6"
                     >
                       {posting ? 'Posting…' : 'Submit Reply'}
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -321,16 +341,16 @@ function QueryDetailPage() {
         </div>
 
         {/* ── Side column ─────────────────────────────────────────── */}
-        <div className="hidden w-[280px] shrink-0 flex-col gap-6 lg:flex">
+        <div className="w-full lg:w-[280px] shrink-0 flex flex-col gap-6">
           {/* Tags */}
           {(question.tags || []).length > 0 && (
-            <div className="rounded-lg border border-[#e5e7eb] bg-white p-6">
-              <h4 className="mb-4 text-[11px] font-extrabold uppercase tracking-wide text-[#9ca3af]">Tags</h4>
+            <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+              <h4 className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Tags</h4>
               <div className="flex flex-wrap gap-2">
                 {question.tags.map(t => (
                   <span
                     key={t}
-                    className="rounded-md bg-[#8c6a40]/10 px-2.5 py-1 text-[12px] font-semibold capitalize text-[#8c6a40]"
+                    className="rounded-lg bg-primary/10 border border-primary/20 px-3 py-1 text-xs font-semibold capitalize text-primary shadow-sm"
                   >
                     {t}
                   </span>
@@ -340,22 +360,22 @@ function QueryDetailPage() {
           )}
 
           {/* Query Status */}
-          <div className="rounded-lg border border-[#e5e7eb] bg-white p-6">
-            <h4 className="mb-6 text-[11px] font-extrabold uppercase tracking-wide text-[#9ca3af]">Query Status</h4>
+          <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+            <h4 className="mb-6 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Query Status</h4>
             <div className="relative pl-5">
-              <div className="absolute bottom-2.5 left-2.5 top-2.5 w-px bg-[#d1d5db]" />
+              <div className="absolute bottom-2.5 left-2.5 top-2.5 w-px bg-border" />
               {steps.map((s, i) => (
                 <div key={i} className={`relative ${i < steps.length - 1 ? 'mb-6' : ''}`}>
                   <div
-                    className={`absolute -left-5 top-0 flex h-5 w-5 items-center justify-center rounded-full text-white ${
-                      s.done ? (s.green ? 'bg-[#16a34a]' : 'bg-[#8c6a40]') : 'bg-[#d1d5db]'
+                    className={`absolute -left-5 top-0.5 flex h-5 w-5 items-center justify-center rounded-full text-white ${
+                      s.done ? (s.green ? 'bg-green-600' : 'bg-primary') : 'bg-muted-foreground/35'
                     }`}
                   >
                     <Check className="h-3 w-3" strokeWidth={3} />
                   </div>
-                  <div className="pl-2">
-                    <h5 className={`text-[13px] font-bold ${s.green && s.done ? 'text-[#166534]' : 'text-[#191c1d]'}`}>{s.label}</h5>
-                    <p className="text-[11px] text-[#6b7280]">{s.meta}</p>
+                  <div className="pl-3.5">
+                    <h5 className={`text-sm font-semibold ${s.green && s.done ? 'text-green-600 dark:text-green-400' : 'text-foreground'}`}>{s.label}</h5>
+                    <p className="text-xs text-muted-foreground mt-0.5">{s.meta}</p>
                   </div>
                 </div>
               ))}
@@ -363,22 +383,22 @@ function QueryDetailPage() {
           </div>
 
           {/* Related Recent Queries */}
-          <div className="rounded-lg border border-[#e5e7eb] bg-white p-6">
-            <h4 className="mb-5 text-[11px] font-extrabold uppercase tracking-wide text-[#9ca3af]">Related Recent Queries</h4>
+          <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+            <h4 className="mb-5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Related Queries</h4>
             {related.length === 0 ? (
-              <p className="text-[12px] text-[#9ca3af]">No related queries found.</p>
+              <p className="text-xs text-muted-foreground py-2 text-center">No related queries found.</p>
             ) : (
-              <ul className="flex flex-col gap-3">
+              <ul className="flex flex-col gap-3.5">
                 {related.map(q => (
-                  <li key={q.question_id}>
+                  <li key={q.question_id} className="overflow-hidden">
                     <button
                       type="button"
                       title={q.title}
                       onClick={() => navigate(`/query/${q.question_id}`)}
-                      className="flex w-full items-center gap-2 text-left transition hover:text-[#8c6a40]"
+                      className="flex w-full items-start gap-2.5 text-left text-muted-foreground hover:text-primary transition-colors focus:outline-none"
                     >
-                      <MessageCircle className="h-3.5 w-3.5 shrink-0 text-[#9ca3af]" strokeWidth={1.8} />
-                      <span className="truncate text-[13px] font-medium text-[#4b5563]">{q.title}</span>
+                      <MessageCircle className="h-4 w-4 shrink-0 text-muted-foreground/60 mt-0.5" strokeWidth={1.8} />
+                      <span className="truncate text-sm font-semibold text-foreground">{q.title}</span>
                     </button>
                   </li>
                 ))}
@@ -411,29 +431,36 @@ function ThreadItem({
 
   return (
     <div className="relative mb-8">
-      <div className={`absolute -left-[60px] top-0 flex h-12 w-12 items-center justify-center rounded-lg text-[14px] font-bold text-white ring-4 ring-[#f3f4f6] ${hidden ? 'bg-[#9ca3af]' : 'bg-[#191c1d]'}`}>
+      {/* Avatar bubble */}
+      <div className={`absolute -left-[54px] sm:-left-[60px] top-0 flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-lg text-sm font-semibold border border-border/40 ring-4 ring-background shadow-sm ${
+        hidden ? 'bg-muted text-muted-foreground' : 'bg-secondary text-foreground'
+      }`}>
         {initials}
       </div>
 
-      <div className={`overflow-hidden rounded-xl border bg-white shadow-sm ${hidden ? 'border-dashed border-[#d1d5db]' : 'border-[#e5e7eb]'}`}>
+      <div className={`overflow-hidden rounded-xl border bg-card shadow-sm transition-all duration-200 ${
+        hidden ? 'border-dashed border-border' : 'border-border'
+      } ${accepted ? 'ring-1 ring-green-500/30 border-green-500/40' : ''}`}>
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[#f3f4f6] px-5 py-3">
+        <div className="flex items-center justify-between border-b border-border/50 bg-secondary/15 px-5 py-3.5">
           <div className="flex items-center gap-3">
-            <span className="text-[14px] font-bold text-[#191c1d]">
+            <span className="text-sm font-semibold text-foreground">
               {authorName}{isSelf && ' (You)'}
             </span>
-            <span className="text-[12px] text-[#9ca3af]">
+            <span className="text-xs text-muted-foreground">
               {isOriginal ? 'opened this' : 'commented'} {date}
             </span>
           </div>
           {accepted && !hidden && (
-            <span className="flex items-center gap-1.5 text-[11px] font-bold text-[#16a34a]">
-              <Check className="h-3.5 w-3.5" strokeWidth={3} /> SOLUTION
+            <span className="flex items-center gap-1.5 text-[10px] font-bold tracking-wider bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20 px-2 py-0.5 rounded">
+              <Check className="h-3 w-3" strokeWidth={3} /> SOLUTION
             </span>
           )}
           {hidden && (
-            <span className={`flex items-center gap-1.5 text-[11px] font-bold ${moderationState === 'deleted' ? 'text-[#9ca3af]' : 'text-[#b45309]'}`}>
-              <AlertTriangle className="h-3.5 w-3.5" strokeWidth={1.8} />
+            <span className={`flex items-center gap-1.5 text-[10px] font-bold tracking-wider px-2 py-0.5 rounded ${
+              moderationState === 'deleted' ? 'bg-muted text-muted-foreground' : 'bg-amber-500/10 text-amber-600 border border-amber-500/20'
+            }`}>
+              <AlertTriangle className="h-3 w-3" strokeWidth={1.8} />
               {moderationState === 'deleted' ? 'DELETED' : 'UNDER REVIEW'}
             </span>
           )}
@@ -441,34 +468,34 @@ function ThreadItem({
 
         {/* Body — tombstone when hidden */}
         {hidden ? (
-          <p className="px-5 py-5 text-[13px] italic leading-6 text-[#9ca3af]">{tombstone}</p>
+          <p className="px-5 py-5 text-sm italic leading-relaxed text-muted-foreground">{tombstone}</p>
         ) : (
           <div
-            className="px-5 py-5 text-[14px] leading-6 text-[#4b5563]"
+            className="px-5 py-5 text-sm leading-relaxed text-foreground/90 font-normal"
             dangerouslySetInnerHTML={{ __html: body }}
           />
         )}
 
         {/* Footer (visible answers only) */}
         {!isOriginal && !hidden && (
-          <div className="flex items-center justify-between border-t border-[#f3f4f6] bg-[#fafafa] px-5 py-3">
-            <div className="flex items-center gap-2 text-[14px] font-bold text-[#191c1d]">
+          <div className="flex items-center justify-between border-t border-border/50 bg-secondary/25 px-5 py-3">
+            <div className="flex items-center gap-2.5 text-sm font-semibold text-foreground">
               <button
                 type="button"
                 onClick={onVoteUp}
                 title={myVote === 1 ? 'Remove upvote' : 'Upvote'}
-                className={`transition ${myVote === 1 ? 'text-[#8c6a40]' : 'text-[#6b7280] hover:text-[#8c6a40]'}`}
+                className={`transition-colors rounded-full hover:bg-secondary p-1 focus:outline-none ${myVote === 1 ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}
               >
-                <ChevronUp className="h-5 w-5" strokeWidth={myVote === 1 ? 3 : 2} />
+                <ChevronUp className="h-4.5 w-4.5" strokeWidth={myVote === 1 ? 3 : 2} />
               </button>
-              <span className={myVote === 1 ? 'text-[#8c6a40]' : myVote === -1 ? 'text-[#dc2626]' : ''}>{score}</span>
+              <span className={`min-w-4 text-center ${myVote === 1 ? 'text-primary' : myVote === -1 ? 'text-red-500' : 'text-muted-foreground'}`}>{score}</span>
               <button
                 type="button"
                 onClick={onVoteDown}
                 title={myVote === -1 ? 'Remove downvote' : 'Downvote'}
-                className={`transition ${myVote === -1 ? 'text-[#dc2626]' : 'text-[#6b7280] hover:text-[#dc2626]'}`}
+                className={`transition-colors rounded-full hover:bg-secondary p-1 focus:outline-none ${myVote === -1 ? 'text-red-500' : 'text-muted-foreground hover:text-red-500'}`}
               >
-                <ChevronDown className="h-5 w-5" strokeWidth={myVote === -1 ? 3 : 2} />
+                <ChevronDown className="h-4.5 w-4.5" strokeWidth={myVote === -1 ? 3 : 2} />
               </button>
             </div>
             <div className="flex items-center gap-4">
@@ -477,18 +504,18 @@ function ThreadItem({
                 <button
                   type="button"
                   onClick={onAccept}
-                  className="flex items-center gap-1.5 text-[12px] font-bold text-[#16a34a] transition hover:text-[#15803d]"
+                  className="flex items-center gap-1.5 text-xs font-semibold text-green-600 dark:text-green-400 transition hover:text-green-700 active:scale-95 focus:outline-none"
                 >
                   <Check className="h-3.5 w-3.5" strokeWidth={3} /> MARK AS RESOLUTION
                 </button>
               )}
               {isSelf ? (
-                <span className="text-[11px] italic text-[#9ca3af]">Cannot report own comment</span>
+                <span className="text-xs italic text-muted-foreground/60">Cannot report own reply</span>
               ) : (
                 <button
                   type="button"
                   onClick={onReport}
-                  className="flex items-center gap-1.5 text-[12px] font-bold text-[#9ca3af] transition hover:text-[#dc2626]"
+                  className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground transition hover:text-red-500 active:scale-95 focus:outline-none"
                 >
                   <AlertTriangle className="h-3.5 w-3.5" strokeWidth={1.8} /> REPORT
                 </button>

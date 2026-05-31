@@ -29,6 +29,7 @@ const notificationSchema = new mongoose.Schema(
         'reply',
         'warning',
         'account_status',
+        'admin_announcement',
       ],
       required: true,
     },

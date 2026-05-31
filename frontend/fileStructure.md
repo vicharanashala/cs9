@@ -67,7 +67,7 @@ frontend/
     │   │       ├── FAQManagement/
     │   │       │   └── index.jsx
     │   │       └── AdminProfile/
-    │   │           └── index.jsx    # Profile settings
+    │   │           └── index.jsx    # Header menu only — no sidebar tab
     │   │
     │   └── user/                 # Authenticated student section
     │       ├── index.jsx         # Route entry (redirects based on role)

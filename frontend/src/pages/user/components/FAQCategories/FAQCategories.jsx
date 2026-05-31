@@ -8,26 +8,26 @@ function FAQCategories({ categories = [], selected = [], onToggle, onClear }) {
   const top = categories.slice(0, 5)
 
   return (
-    <div className="rounded-xl border border-[#c4c7c7] bg-white p-6">
+    <div className="rounded-xl border border-border bg-card p-6 shadow-sm animate-fade-in-up">
       <div className="mb-6 flex items-center gap-3">
-        <div className="rounded-md bg-[#8c6a40] p-1.5 text-white">
+        <div className="rounded-md bg-primary p-1.5 text-primary-foreground shadow-sm">
           <TrendingUp className="h-5 w-5" strokeWidth={1.8} />
         </div>
-        <span className="font-display text-[16px] font-semibold text-[#191c1d]">Top FAQ Categories</span>
+        <span className="font-display text-base font-bold text-foreground">Top FAQ Categories</span>
         {selected.length > 0 && (
           <button
             type="button"
             onClick={onClear}
             aria-label="Clear selected categories"
-            className="ml-auto flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#8c6a40]/10 text-[#8c6a40] transition hover:bg-[#8c6a40] hover:text-white"
+            className="ml-auto flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary transition hover:bg-primary hover:text-primary-foreground cursor-pointer"
           >
-            <X className="h-3 w-3" strokeWidth={2.5} />
+            <X className="h-3.5 w-3.5" strokeWidth={2.5} />
           </button>
         )}
       </div>
 
       {top.length === 0 ? (
-        <p className="text-[12px] text-[#9ca3af]">No categories yet.</p>
+        <p className="text-sm text-muted-foreground py-2">No categories yet.</p>
       ) : (
         <ul className="space-y-2">
           {top.map(({ tag, count }, i) => {
@@ -37,17 +37,17 @@ function FAQCategories({ categories = [], selected = [], onToggle, onClear }) {
                 <button
                   type="button"
                   onClick={() => onToggle?.(tag)}
-                  className={`flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left transition ${
-                    isSelected ? 'bg-[#8c6a40]/10' : 'hover:bg-[#f3f4f6]'
+                  className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-all duration-200 cursor-pointer hover:scale-[1.01] ${
+                    isSelected ? 'bg-primary/10' : 'hover:bg-secondary text-foreground'
                   }`}
                 >
-                  <span className={`font-display text-[20px] leading-none ${isSelected ? 'text-[#8c6a40]' : 'text-[#9ca3af]'}`}>
+                  <span className={`font-display text-xl leading-none ${isSelected ? 'text-primary font-bold animate-pulse' : 'text-muted-foreground/80'}`}>
                     {String(i + 1).padStart(2, '0')}
                   </span>
-                  <h5 className={`flex-1 text-[13px] font-medium capitalize ${isSelected ? 'text-[#8c6a40]' : 'text-[#191c1d]'}`}>
+                  <h5 className={`flex-1 text-sm font-bold capitalize ${isSelected ? 'text-primary' : 'text-foreground'}`}>
                     {tag}
                   </h5>
-                  <span className="shrink-0 text-[10px] font-medium uppercase tracking-wide text-[#747878]">
+                  <span className="shrink-0 rounded bg-secondary/80 border border-border/40 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                     {count} {count === 1 ? 'query' : 'queries'}
                   </span>
                 </button>

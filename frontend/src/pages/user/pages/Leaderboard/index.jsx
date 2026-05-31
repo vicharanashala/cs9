@@ -10,9 +10,9 @@ const TABS = [
 ]
 
 const MEDAL = {
-  0: { ring: 'border-[#f59e0b]', badge: 'bg-[#f59e0b]', size: 'h-20 w-20 text-[24px]' },
-  1: { ring: 'border-[#9ca3af]', badge: 'bg-[#9ca3af]', size: 'h-16 w-16 text-[20px]' },
-  2: { ring: 'border-[#b45309]', badge: 'bg-[#b45309]', size: 'h-16 w-16 text-[20px]' },
+  0: { ring: 'border-amber-500 shadow-amber-500/20', badge: 'bg-amber-500 text-white', size: 'h-22 w-22 text-[26px]' },
+  1: { ring: 'border-slate-400 shadow-slate-400/20', badge: 'bg-slate-400 text-white', size: 'h-18 w-18 text-[20px]' },
+  2: { ring: 'border-amber-700 shadow-amber-700/20', badge: 'bg-amber-700 text-white', size: 'h-18 w-18 text-[20px]' },
 }
 
 function initialsOf(name = '') {
@@ -45,28 +45,28 @@ function LeaderboardPage() {
   const podiumOrder = [podium[1], podium[0], podium[2]].filter(Boolean)
 
   return (
-    <div className="mx-auto w-full max-w-[900px] px-8 py-8">
+    <div className="mx-auto w-full max-w-[900px] px-8 py-8 text-foreground animate-fade-in-up">
       {/* Header */}
-      <div className="mb-6">
-        <h2 className="font-display flex items-center gap-2 text-[22px] font-bold text-[#191c1d]">
-          <Trophy className="h-5 w-5 text-[#8c6a40]" strokeWidth={1.8} /> Leaderboard
+      <div className="mb-8">
+        <h2 className="font-display flex items-center gap-2.5 text-xl font-bold text-foreground">
+          <Trophy className="h-6 w-6 text-primary" strokeWidth={1.8} /> Leaderboard
         </h2>
-        <p className="mt-1 text-[13px] text-[#747878]">
+        <p className="mt-1 text-sm text-muted-foreground">
           Top contributors across the internship community.
         </p>
       </div>
 
       {/* Tabs */}
-      <div className="mb-8 flex gap-7 border-b border-[#c4c7c7]">
+      <div className="mb-10 flex gap-7 border-b border-border">
         {TABS.map(t => (
           <button
             key={t.key}
             type="button"
             onClick={() => setType(t.key)}
-            className={`mb-[-1px] pb-3 text-[13px] font-semibold transition ${
+            className={`mb-[-1px] pb-3.5 text-sm font-semibold transition focus:outline-none ${
               type === t.key
-                ? 'border-b-2 border-[#8c6a40] text-[#8c6a40]'
-                : 'text-[#6b7280] hover:text-[#374151]'
+                ? 'border-b-2 border-primary text-primary'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             {t.label}
@@ -75,33 +75,35 @@ function LeaderboardPage() {
       </div>
 
       {loading ? (
-        <div className="flex items-center gap-2 py-12 text-[13px] text-[#747878]">
-          <Loader className="h-4 w-4 animate-spin" /> Loading leaderboard…
+        <div className="flex items-center justify-center gap-2.5 py-16 text-sm text-muted-foreground bg-card rounded-xl border border-border">
+          <Loader className="h-5 w-5 animate-spin text-primary" /> Loading leaderboard…
         </div>
       ) : rows.length === 0 ? (
-        <p className="py-12 text-center text-[13px] text-[#747878]">No ranked contributors yet.</p>
+        <div className="py-16 text-center text-sm text-muted-foreground bg-card rounded-xl border border-border">
+          No ranked contributors yet.
+        </div>
       ) : (
         <>
           {/* Podium */}
-          <div className="mb-10 flex items-end justify-center gap-6">
+          <div className="mb-12 flex items-end justify-center gap-8 md:gap-14 pt-4">
             {podiumOrder.map(entry => {
               const rank = rows.indexOf(entry)
               const m = MEDAL[rank]
               const isSelf = entry.userId === user?.userId
               return (
-                <div key={entry.userId} className="flex flex-col items-center">
+                <div key={entry.userId} className="flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-300">
                   <div className="relative">
-                    <div className={`flex items-center justify-center rounded-full border-[3px] bg-[#f3f4f6] font-bold text-[#191c1d] ${m.ring} ${m.size}`}>
+                    <div className={`flex items-center justify-center rounded-full border-[3px] bg-secondary font-bold text-foreground shadow-lg transition-transform duration-300 hover:scale-105 ${m.ring} ${m.size}`}>
                       {initialsOf(entry.displayName)}
                     </div>
-                    <div className={`absolute -bottom-2 left-1/2 flex h-6 w-6 -translate-x-1/2 items-center justify-center rounded-full text-[11px] font-extrabold text-white ${m.badge}`}>
+                    <div className={`absolute -bottom-2.5 left-1/2 flex h-6.5 w-6.5 -translate-x-1/2 items-center justify-center rounded-full text-xs font-bold shadow-sm ${m.badge}`}>
                       {rank + 1}
                     </div>
                   </div>
-                  <p className={`mt-4 max-w-[120px] truncate text-center text-[13px] font-bold ${isSelf ? 'text-[#8c6a40]' : 'text-[#191c1d]'}`}>
+                  <p className={`mt-5 max-w-[130px] truncate text-center text-sm font-semibold ${isSelf ? 'text-primary' : 'text-foreground'}`}>
                     {isSelf ? 'You' : entry.displayName}
                   </p>
-                  <p className="text-[12px] font-semibold text-[#747878]">{entry.score} {unit}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{entry.score} {unit}</p>
                 </div>
               )
             })}
@@ -109,24 +111,26 @@ function LeaderboardPage() {
 
           {/* Ranked list (4th onward) */}
           {rest.length > 0 && (
-            <div className="overflow-hidden rounded-xl border border-[#c4c7c7] bg-white">
+            <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
               {rest.map((entry, i) => {
                 const rank = i + 4
                 const isSelf = entry.userId === user?.userId
                 return (
                   <div
                     key={entry.userId}
-                    className={`flex items-center gap-4 border-b border-[#f3f4f6] px-5 py-3 last:border-b-0 ${isSelf ? 'bg-[#8c6a40]/10' : ''}`}
+                    className={`flex items-center gap-4 border-b border-border/50 px-6 py-4 last:border-b-0 transition-colors ${
+                      isSelf ? 'bg-primary/10 hover:bg-primary/15' : 'hover:bg-secondary/40'
+                    }`}
                   >
-                    <span className="w-6 text-[13px] font-bold text-[#9ca3af]">{rank}</span>
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#0b1528] text-[12px] font-bold text-white">
+                    <span className="w-6 text-sm font-semibold text-muted-foreground">{rank}</span>
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-sm font-semibold text-foreground border border-border/40">
                       {initialsOf(entry.displayName)}
                     </div>
-                    <span className={`flex-1 text-[13px] font-medium ${isSelf ? 'text-[#8c6a40]' : 'text-[#191c1d]'}`}>
+                    <span className={`flex-1 text-sm font-semibold ${isSelf ? 'text-primary' : 'text-foreground'}`}>
                       {isSelf ? 'You' : entry.displayName}
                     </span>
-                    <span className="text-[13px] font-bold text-[#191c1d]">{entry.score}</span>
-                    <span className="w-14 text-right text-[11px] font-medium uppercase tracking-wide text-[#9ca3af]">{unit}</span>
+                    <span className="text-sm font-bold text-foreground">{entry.score}</span>
+                    <span className="w-14 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">{unit}</span>
                   </div>
                 )
               })}

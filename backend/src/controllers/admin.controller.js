@@ -239,3 +239,67 @@ export async function listAdminSparkTransactions(req, res, next) {
     next(error)
   }
 }
+
+export async function sendAdminNotification(req, res, next) {
+  try {
+    const { title, body, recipient_id, is_broadcast } = req.body
+    const actor_id = req.user.userId
+
+    if (!title || !body) {
+      throw createHttpError(400, 'Title and Body are required')
+    }
+
+    if (is_broadcast) {
+      const allUsers = await User.find({}).select('user_id').lean()
+      const notificationsToInsert = allUsers.map((u) => ({
+        recipient_id: u.user_id,
+        actor_id,
+        type: 'admin_announcement',
+        title,
+        body,
+        reference_type: 'user',
+        reference_id: actor_id,
+      }))
+
+      if (notificationsToInsert.length > 0) {
+        await Notification.insertMany(notificationsToInsert)
+      }
+
+      res.json({
+        success: true,
+        message: `Notification broadcasted to ${notificationsToInsert.length} users`,
+      })
+    } else {
+      const ids = Array.isArray(req.body.recipient_ids)
+        ? req.body.recipient_ids
+        : recipient_id
+        ? [recipient_id]
+        : []
+
+      if (ids.length === 0) {
+        throw createHttpError(400, 'Recipient ID(s) are required for direct notification')
+      }
+
+      const notificationsToInsert = ids.map((uid) => ({
+        recipient_id: uid,
+        actor_id,
+        type: 'admin_announcement',
+        title,
+        body,
+        reference_type: 'user',
+        reference_id: actor_id,
+      }))
+
+      if (notificationsToInsert.length > 0) {
+        await Notification.insertMany(notificationsToInsert)
+      }
+
+      res.json({
+        success: true,
+        message: `Notification sent successfully to ${notificationsToInsert.length} user(s)`,
+      })
+    }
+  } catch (error) {
+    next(error)
+  }
+}

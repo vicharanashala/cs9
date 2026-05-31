@@ -6,15 +6,15 @@ function FAQManagementView({ dashboardData }) {
   const faqTotal = dashboardData?.metrics?.questions?.faq || 0
 
   return (
-    <div className="flex-1 overflow-y-auto p-5 lg:p-8">
+    <div className="flex-1 overflow-y-auto p-5 lg:p-8 text-foreground animate-fade-in-up">
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="font-display text-[24px] font-semibold text-[#111827]">FAQ Management</h1>
-          <p className="mt-2 text-[13px] text-[#4b5563]">Published FAQ content and queue health.</p>
+          <h1 className="font-display text-2xl font-bold text-foreground">FAQ Management</h1>
+          <p className="mt-2 text-sm text-muted-foreground">Published FAQ content and queue health.</p>
         </div>
         <button
           type="button"
-          className="flex h-9 items-center gap-2 rounded-lg bg-[#111827] px-4 text-[12px] font-semibold text-white transition hover:bg-[#2e3132]"
+          className="flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-xs font-semibold text-primary-foreground transition hover:bg-primary/90 active:scale-[0.98]"
         >
           <Settings className="h-4 w-4" strokeWidth={1.8} />
           New FAQ
@@ -22,39 +22,39 @@ function FAQManagementView({ dashboardData }) {
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-lg border border-[#e5e7eb] bg-white p-5 shadow-sm">
-          <p className="text-[11px] font-bold uppercase tracking-wide text-[#6b7280]">FAQ Entries</p>
-          <p className="mt-2 text-[28px] font-semibold text-[#111827]">{faqTotal}</p>
+        <div className="rounded-xl border border-border bg-card p-5 shadow-sm animate-fade-in-up">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">FAQ Entries</p>
+          <p className="mt-2 text-2xl font-bold text-foreground">{faqTotal}</p>
         </div>
-        <div className="rounded-lg border border-[#e5e7eb] bg-white p-5 shadow-sm">
-          <p className="text-[11px] font-bold uppercase tracking-wide text-[#6b7280]">Recent FAQ</p>
-          <p className="mt-2 text-[28px] font-semibold text-[#111827]">{faqQuestions.length}</p>
+        <div className="rounded-xl border border-border bg-card p-5 shadow-sm animate-fade-in-up">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Recent FAQ</p>
+          <p className="mt-2 text-2xl font-bold text-foreground">{faqQuestions.length}</p>
         </div>
-        <div className="rounded-lg border border-[#e5e7eb] bg-white p-5 shadow-sm">
-          <p className="text-[11px] font-bold uppercase tracking-wide text-[#6b7280]">Status</p>
-          <p className="mt-3 inline-flex rounded bg-emerald-50 px-2 py-1 text-[11px] font-bold uppercase text-emerald-700">
+        <div className="rounded-xl border border-border bg-card p-5 shadow-sm animate-fade-in-up">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Status</p>
+          <p className="mt-3 inline-flex rounded bg-green-500/10 border border-green-500/20 px-2 py-0.5 text-xs font-bold uppercase text-green-600 dark:text-green-400">
             Synced
           </p>
         </div>
       </div>
 
-      <section className="rounded-lg border border-[#e5e7eb] bg-white shadow-sm">
-        <div className="border-b border-[#e5e7eb] px-5 py-4">
-          <h2 className="flex items-center gap-2 text-[16px] font-bold text-[#111827]">
-            <FileText className="h-4 w-4 text-[#8c6a40]" strokeWidth={1.8} />
+      <section className="rounded-xl border border-border bg-card shadow-sm animate-fade-in-up">
+        <div className="border-b border-border px-5 py-4">
+          <h2 className="flex items-center gap-2 text-base font-bold text-foreground">
+            <FileText className="h-4 w-4 text-primary" strokeWidth={1.8} />
             Recent FAQ records
           </h2>
         </div>
-        <div className="divide-y divide-[#f3f4f6]">
+        <div className="divide-y divide-border/60">
           {faqQuestions.length === 0 ? (
-            <p className="px-5 py-8 text-center text-[13px] text-[#747878]">
+            <p className="px-5 py-8 text-center text-sm text-muted-foreground">
               No recent FAQ records in the admin feed.
             </p>
           ) : (
             faqQuestions.map((question) => (
-              <div key={question.question_id} className="px-5 py-4">
-                <p className="text-[13px] font-semibold text-[#111827]">{question.title}</p>
-                <p className="mt-1 text-[11px] capitalize text-[#6b7280]">{question.status}</p>
+              <div key={question.question_id} className="px-5 py-4 hover:bg-secondary/20 transition-colors">
+                <p className="text-sm font-semibold text-foreground">{question.title}</p>
+                <p className="mt-1 text-xs capitalize text-muted-foreground">{question.status}</p>
               </div>
             ))
           )}

@@ -3,22 +3,35 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import DashboardHeader from './components/Header/DashboardHeader'
 import LeftPane from './components/LeftPane/LeftPane'
 import Footer from '../../components/Footer/Footer'
+import SearchModal from './components/SearchModal/SearchModal'
 import useAuthStore from '../../store/useAuthStore'
+import useThemeStore from '../../store/useThemeStore'
 import { queryClient } from '../../lib/queryClient'
-import { fetchNotifications, markAllNotifRead, logoutUser } from './service'
+import { fetchNotifications, markAllNotifRead, logoutUser, fetchQuestionTags } from './service'
 
 function UserLayout() {
   const navigate = useNavigate()
   const location = useLocation()
   const { user, clearUser } = useAuthStore()
+  const isDark = useThemeStore(s => s.isDark)
+  const toggleDark = useThemeStore(s => s.toggleDark)
 
   const [notifications, setNotifications] = useState([])
   const [unreadCount, setUnreadCount]     = useState(0)
-  const [isDark, setIsDark]               = useState(false)
   const [isLeftPaneCollapsed, setIsLeftPaneCollapsed] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [currentView, setCurrentView]     = useState('dashboard')
   const [sidebarNav, setSidebarNav]        = useState('Dashboard')
   const [searchModalOpen, setSearchModalOpen] = useState(false)
+  const [searchQuery, setSearchQuery]         = useState('')
+  const [activeTags, setActiveTags]           = useState([])
+  const [categories, setCategories]           = useState([])
+
+  useEffect(() => {
+    fetchQuestionTags()
+      .then(tags => setCategories(tags))
+      .catch(() => setCategories([]))
+  }, [])
 
   const initials = user?.name
     ? user.name.trim().split(/\s+/).map(n => n[0]).slice(0, 2).join('').toUpperCase()
@@ -54,19 +67,26 @@ function UserLayout() {
   }
 
   return (
-    <div
-      className={`flex min-h-svh flex-col bg-[#f3f4f6] text-[#191c1d] ${
-        isDark ? 'filter-[invert(1)_hue-rotate(180deg)]' : ''
-      }`}
-    >
+    <div className="flex min-h-svh flex-col bg-background text-foreground">
+      {/* Mobile drawer backdrop */}
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Main row: LeftPane + content */}
-      <div className="flex flex-1">
+      <div className="flex flex-1 relative">
         <LeftPane
           isCollapsed={isLeftPaneCollapsed}
           onToggleCollapse={() => setIsLeftPaneCollapsed(v => !v)}
           sidebarNav={location.pathname === '/leaderboard' ? 'Leaderboard' : sidebarNav}
           currentView={currentView}
+          isMobileOpen={isMobileMenuOpen}
+          onMobileClose={() => setIsMobileMenuOpen(false)}
           onNavigate={label => {
+            setIsMobileMenuOpen(false)
             if (label === 'Leaderboard') {
               navigate('/leaderboard')
               return
@@ -79,7 +99,7 @@ function UserLayout() {
           }}
         />
 
-        <div className="flex flex-1 flex-col">
+        <div className="flex flex-1 flex-col min-w-0 overflow-x-hidden">
           <DashboardHeader
             user={user}
             initials={initials}
@@ -91,29 +111,53 @@ function UserLayout() {
             onSearchOpen={() => setSearchModalOpen(true)}
             onRaiseQuery={() => navigate('/raise-query')}
             onNotifOpen={handleNotifOpen}
-            onDarkToggle={() => setIsDark(v => !v)}
+            onDarkToggle={toggleDark}
             onProfileSettings={() => navigate('/profile')}
             onLogout={handleLogout}
+            onMenuToggle={() => setIsMobileMenuOpen(v => !v)}
           />
 
-          <Outlet
-            context={{
-              user,
-              sidebarNav,
-              setSidebarNav,
-              currentView,
-              setCurrentView,
-              initials,
-              searchModalOpen,
-              setSearchModalOpen,
-              openSearchModal: () => setSearchModalOpen(true),
-            }}
-          />
+          <div className="flex-1">
+            <Outlet
+              context={{
+                user,
+                sidebarNav,
+                setSidebarNav,
+                currentView,
+                setCurrentView,
+                initials,
+                searchModalOpen,
+                setSearchModalOpen,
+                searchQuery,
+                setSearchQuery,
+                activeTags,
+                setActiveTags,
+                openSearchModal: () => setSearchModalOpen(true),
+              }}
+            />
+          </div>
+
+          <Footer />
         </div>
       </div>
 
-      {/* Footer — full width, outside content area */}
-      <Footer />
+      {/* ── Global Search modal ─────────────────────────────────────────── */}
+      <SearchModal
+        open={searchModalOpen}
+        categories={categories}
+        initialSearch={searchQuery}
+        initialTags={activeTags}
+        onApply={(search, tags) => {
+          setSearchQuery(search)
+          setActiveTags(tags)
+          setSearchModalOpen(false)
+          if (location.pathname !== '/dashboard') {
+            setSidebarNav('Dashboard')
+            navigate('/dashboard')
+          }
+        }}
+        onClose={() => setSearchModalOpen(false)}
+      />
     </div>
   )
 }

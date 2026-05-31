@@ -4,6 +4,7 @@ import {
   getAdminDashboard,
   listAdminSparkTransactions,
   removeUserRole,
+  sendAdminNotification,
 } from '../controllers/admin.controller.js'
 import { checkRole, verifyToken } from '../middleware/authMiddleware.js'
 
@@ -25,5 +26,6 @@ router.get('/dashboard', getAdminDashboard)
 router.post('/users/:userId/roles', assignUserRole)
 router.delete('/users/:userId/roles/:roleName', removeUserRole)
 router.get('/sparks/transactions', listAdminSparkTransactions)
+router.post('/notifications/send', sendAdminNotification)
 
 export default router

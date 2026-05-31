@@ -22,58 +22,58 @@ function SparkLeaderboardView() {
   }, [timeFilter])
 
   return (
-    <div className="flex-1 overflow-y-auto p-5 lg:p-8">
+    <div className="flex-1 overflow-y-auto p-5 lg:p-8 text-foreground animate-fade-in-up">
       <div className="mb-8">
         <div className="mb-2 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#fffbeb]">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500/10 border border-amber-500/20">
             <Zap className="h-5 w-5 text-amber-500" strokeWidth={1.8} />
           </div>
           <div>
-            <h1 className="font-display text-[24px] font-semibold text-[#111827]">Spark Leaderboard</h1>
+            <h1 className="font-display text-2xl font-bold text-foreground">Spark Leaderboard</h1>
           </div>
         </div>
-        <p className="mt-2 text-[13px] text-[#4b5563]">
+        <p className="mt-2 text-sm text-muted-foreground">
           Recognising academic rigour and community contribution. Ranked by spark points earned through helpful answers, accepted solutions, and peer support.
         </p>
       </div>
 
       {/* Metric strip */}
-      <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-lg border border-[#e5e7eb] bg-white p-5 shadow-sm">
-          <p className="text-[11px] font-bold uppercase tracking-wide text-[#6b7280]">Total Sparks Issued</p>
-          <p className="mt-2 text-[28px] font-semibold text-[#111827]">
+      <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3 animate-fade-in-up">
+        <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Total Sparks Issued</p>
+          <p className="mt-2 text-2xl font-bold text-foreground">
             {leaders.reduce((sum, l) => sum + (l.score || 0), 0).toLocaleString('en-IN')}
           </p>
         </div>
-        <div className="rounded-lg border border-[#e5e7eb] bg-white p-5 shadow-sm">
-          <p className="text-[11px] font-bold uppercase tracking-wide text-[#6b7280]">Top Earners Today</p>
-          <p className="mt-2 text-[28px] font-semibold text-[#111827]">
+        <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Top Earners Today</p>
+          <p className="mt-2 text-2xl font-bold text-foreground">
             {leaders.slice(0, 3).reduce((sum, l) => sum + (l.score || 0), 0).toLocaleString('en-IN')}
           </p>
         </div>
-        <div className="rounded-lg border border-[#e5e7eb] bg-white p-5 shadow-sm">
+        <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <div className="flex items-center justify-between">
-            <p className="text-[11px] font-bold uppercase tracking-wide text-[#6b7280]">Active Learners</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Active Learners</p>
             <TrendingUp className="h-4 w-4 text-emerald-500" strokeWidth={1.8} />
           </div>
-          <p className="mt-2 text-[28px] font-semibold text-[#111827]">{leaders.length}</p>
+          <p className="mt-2 text-2xl font-bold text-foreground">{leaders.length}</p>
         </div>
       </div>
 
       {/* Leaderboard table */}
-      <div className="rounded-xl border border-[#e5e7eb] bg-white shadow-sm">
-        <div className="flex items-center justify-between border-b border-[#e5e7eb] px-5 py-4">
-          <h2 className="text-[16px] font-bold text-[#111827]">Top Contributors</h2>
-          <div className="flex gap-2 rounded-lg bg-[#f3f4f6] p-1">
+      <div className="rounded-xl border border-border bg-card shadow-sm animate-fade-in-up">
+        <div className="flex items-center justify-between border-b border-border px-5 py-4">
+          <h2 className="text-base font-bold text-foreground">Top Contributors</h2>
+          <div className="flex gap-2 rounded-lg bg-secondary p-1">
             {['Monthly', 'Today'].map(f => (
               <button
                 key={f}
                 type="button"
                 onClick={() => setTimeFilter(f.toLowerCase())}
-                className={`rounded-md px-3 py-1 text-[11px] font-semibold transition ${
+                className={`rounded-md px-3 py-1 text-xs font-semibold transition ${
                   timeFilter === f.toLowerCase()
-                    ? 'bg-white text-[#111827] shadow-sm'
-                    : 'text-[#6b7280] hover:text-[#111827]'
+                    ? 'bg-card text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 {f}
@@ -83,19 +83,19 @@ function SparkLeaderboardView() {
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center py-12 text-[13px] text-[#747878]">
+          <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
             Loading leaderboard…
           </div>
         ) : leaders.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-[13px] text-[#747878]">
-            <Zap className="mb-2 h-8 w-8 text-[#d1d5db]" strokeWidth={1.5} />
+          <div className="flex flex-col items-center justify-center py-12 text-sm text-muted-foreground">
+            <Zap className="mb-2 h-8 w-8 text-muted-foreground/60" strokeWidth={1.5} />
             No spark data yet. Sparks are earned when users answer questions and receive upvotes.
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[600px] border-collapse text-[13px]">
+            <table className="w-full min-w-[600px] border-collapse text-sm">
               <thead>
-                <tr className="border-b border-[#e5e7eb] bg-[#f9fafb] text-left text-[11px] font-bold uppercase tracking-wide text-[#6b7280]">
+                <tr className="border-b border-border bg-secondary/30 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   <th className="px-5 py-3">Rank</th>
                   <th className="px-5 py-3">Scholar</th>
                   <th className="px-5 py-3">Questions Answered</th>
@@ -103,20 +103,20 @@ function SparkLeaderboardView() {
                   <th className="px-5 py-3">Spark Balance</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#f3f4f6]">
+              <tbody className="divide-y divide-border/60">
                 {leaders.map((leader, index) => {
                   const medal = SPARK_ICONS[index + 1]
                   return (
                     <tr
                       key={leader.userId || index}
-                      className="hover:bg-[#fafafa] transition"
+                      className="hover:bg-secondary/40 transition-colors"
                     >
                       <td className="px-5 py-4">
                         <span className="flex items-center gap-1">
                           {medal ? (
-                            <span className="text-[16px]">{medal}</span>
+                            <span className="text-base">{medal}</span>
                           ) : (
-                            <span className="w-5 text-center font-display text-[18px] font-bold text-[#6b7280]">
+                            <span className="w-5 text-center font-display text-base font-semibold text-muted-foreground">
                               {String(index + 1).padStart(2, '0')}
                             </span>
                           )}
@@ -124,26 +124,26 @@ function SparkLeaderboardView() {
                       </td>
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#8c6a40] text-[11px] font-bold text-white">
+                          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary text-xs font-semibold">
                             {(leader.displayName || leader.name || 'U')
                               .trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase()}
                           </div>
                           <div>
-                            <p className="font-semibold text-[#111827]">
+                            <p className="font-semibold text-foreground">
                               {leader.displayName || leader.name || 'Unknown'}
                             </p>
-                            <p className="text-[11px] text-[#9ca3af]">{leader.email || ''}</p>
+                            <p className="text-xs text-muted-foreground">{leader.email || ''}</p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-5 py-4 text-[#374151]">
+                      <td className="px-5 py-4 text-foreground/90">
                         {leader.answersCount ?? leader.resolved ?? '—'}
                       </td>
-                      <td className="px-5 py-4 text-[#374151]">
+                      <td className="px-5 py-4 text-foreground/90">
                         {leader.upvotesReceived ?? leader.upvotes ?? '—'}
                       </td>
                       <td className="px-5 py-4">
-                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-[12px] font-bold text-amber-700">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 text-xs font-bold text-amber-600 dark:text-amber-400">
                           ⚡ {leader.score?.toLocaleString('en-IN') ?? leader.sparkBalance?.toLocaleString('en-IN') ?? 0}
                         </span>
                       </td>

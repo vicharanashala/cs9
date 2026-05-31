@@ -67,10 +67,10 @@ app.use(
 
 app.use(express.json({ limit: '10kb' }))
 
-/** Global rate limit: 100 requests per 15 minutes per IP */
+/** Global rate limit: 500 requests per 5 minutes per IP */
 const globalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
+  windowMs: 5 * 60 * 1000,
+  max: 500,
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, message: 'Too many requests, please try again later.' },

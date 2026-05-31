@@ -8,7 +8,7 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 function Input({ className = '', ...props }: InputProps) {
   return (
     <HuiInput
-      className={`h-11 w-full rounded-lg border border-[#d1d5db] bg-white px-4 text-[13px] shadow-sm outline-none transition placeholder:text-[#9da1a1] focus:border-black focus:ring-1 focus:ring-black disabled:cursor-not-allowed disabled:opacity-60 ${className}`}
+      className={`h-11 w-full rounded-lg border border-border hover:border-primary/50 bg-card px-4 text-sm text-foreground shadow-sm outline-none transition duration-200 placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60 ${className}`}
       {...props}
     />
   )

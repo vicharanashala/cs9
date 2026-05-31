@@ -1,13 +1,14 @@
-import { useCallback, useEffect, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import useAuthStore from '../../store/useAuthStore'
+import useThemeStore from '../../store/useThemeStore'
 import AdminHeader from './components/Header/AdminHeader'
 import AdminLeftPane from './components/LeftPane/AdminLeftPane'
-import DashboardView from './pages/Dashboard'
 import FAQManagementView from './pages/FAQManagement'
 import QueriesManagementView from './pages/QueriesManagement'
 import SparkLeaderboardView from './pages/SparkLeaderboard'
 import AdminProfileView from './pages/AdminProfile'
+import NotificationsManagementView from './pages/NotificationsManagement'
 import {
   fetchAdminDashboard,
   fetchAdminNotifications,
@@ -15,9 +16,14 @@ import {
   markAllAdminNotificationsRead,
 } from './service'
 
+// Lazy-loaded so Recharts ships in a separate chunk, not the initial bundle.
+const DashboardView = lazy(() => import('./pages/Dashboard'))
+
 function AdminHome() {
   const navigate = useNavigate()
   const { user, clearUser } = useAuthStore()
+  const isDark = useThemeStore(s => s.isDark)
+  const toggleDark = useThemeStore(s => s.toggleDark)
   const [currentAdminView, setCurrentAdminView] = useState('dashboard')
   const [dashboardData, setDashboardData] = useState(null)
   const [isDashboardLoading, setIsDashboardLoading] = useState(true)
@@ -113,6 +119,10 @@ function AdminHome() {
     }
   }
 
+  function handleProfileSettings() {
+    setCurrentAdminView('adminProfile')
+  }
+
   function handleSearchSubmit(event) {
     event.preventDefault()
     if (searchQuery.trim()) {
@@ -128,7 +138,7 @@ function AdminHome() {
   }
 
   return (
-    <div className="flex min-h-svh bg-[#f3f4f6] text-[#111827]">
+    <div className="flex min-h-svh bg-background text-foreground">
       <AdminLeftPane currentView={currentAdminView} onNavigate={setCurrentAdminView} />
 
       <main className="flex min-w-0 flex-1 flex-col">
@@ -138,18 +148,28 @@ function AdminHome() {
           searchQuery={searchQuery}
           notifications={notifications}
           unreadCount={unreadCount}
+          isDark={isDark}
           onSearchChange={setSearchQuery}
           onSearchSubmit={handleSearchSubmit}
           onNotificationsOpen={handleNotificationsOpen}
+          onDarkToggle={toggleDark}
           onLanding={() => navigate('/')}
           onLogout={handleLogout}
+          onProfileSettings={handleProfileSettings}
         />
 
-        {currentAdminView === 'dashboard' && <DashboardView {...viewProps} />}
+        {currentAdminView === 'dashboard' && (
+          <Suspense
+            fallback={<div className="flex-1 p-8 text-sm text-muted-foreground animate-fade-in-up">Loading dashboard…</div>}
+          >
+            <DashboardView {...viewProps} />
+          </Suspense>
+        )}
         {currentAdminView === 'queriesManagement' && <QueriesManagementView {...viewProps} />}
         {currentAdminView === 'sparkLeaderboard' && <SparkLeaderboardView {...viewProps} />}
         {currentAdminView === 'faqManagement' && <FAQManagementView {...viewProps} />}
         {currentAdminView === 'adminProfile' && <AdminProfileView user={user} />}
+        {currentAdminView === 'notifications' && <NotificationsManagementView {...viewProps} />}
       </main>
     </div>
   )

@@ -47,14 +47,14 @@ function LoginModal({ isOpen, onClose, onLogin }) {
     <Modal isOpen={isOpen} onClose={handleClose} position="top-right" title={isForgotPassword ? 'Reset Password' : 'Login'}>
       {isForgotPassword ? (
         <>
-          <h2 className="mb-2 font-display text-center text-[15px] font-semibold leading-snug text-black">
+          <h2 className="mb-2 font-display text-center text-[16px] font-semibold leading-snug text-foreground">
             Reset Password
           </h2>
-          <p className="mx-auto mb-4 max-w-sm text-center text-[13px] leading-6 text-[#444748]">
+          <p className="mx-auto mb-5 max-w-sm text-center text-[13px] leading-6 text-muted-foreground">
             Enter your user ID or email address and we will send password reset instructions.
           </p>
 
-          <form className="flex flex-col gap-3" onSubmit={handleResetPassword}>
+          <form className="flex flex-col gap-4" onSubmit={handleResetPassword}>
             <label className="sr-only" htmlFor="reset-user-id">User ID</label>
             <Input
               autoComplete="username"
@@ -73,7 +73,7 @@ function LoginModal({ isOpen, onClose, onLogin }) {
             <Button
               type="button"
               variant="ghost"
-              className="w-full justify-center"
+              className="w-full justify-center text-[12px]"
               onClick={() => {
                 setError('')
                 setIsForgotPassword(false)
@@ -86,38 +86,40 @@ function LoginModal({ isOpen, onClose, onLogin }) {
       ) : (
         <>
           {error && (
-            <p className="mb-3 rounded-lg border border-[#f3c6c6] bg-[#fff5f5] px-3 py-2 text-center text-[13px] leading-6 text-[#ba1a1a]">
+            <p className="mb-4 rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-center text-[13px] leading-6 text-destructive">
               {error}
             </p>
           )}
 
-          <form className="flex flex-col gap-3" onSubmit={handleLogin}>
-            <label className="sr-only" htmlFor="login-user-id">User ID</label>
-            <Input
-              autoComplete="username"
-              id="login-user-id"
-              onChange={(event) => setUserId(event.target.value)}
-              placeholder="Enter your user ID"
-              required
-              type="email"
-              value={userId}
-            />
+          <form className="flex flex-col gap-4" onSubmit={handleLogin}>
+            <div className="flex flex-col gap-3">
+              <label className="sr-only" htmlFor="login-user-id">User ID</label>
+              <Input
+                autoComplete="username"
+                id="login-user-id"
+                onChange={(event) => setUserId(event.target.value)}
+                placeholder="Enter your user ID (email)"
+                required
+                type="email"
+                value={userId}
+              />
 
-            <label className="sr-only" htmlFor="login-password">Password</label>
-            <Input
-              autoComplete="current-password"
-              id="login-password"
-              onChange={(event) => setPassword(event.target.value)}
-              placeholder="Enter your password"
-              required
-              type="password"
-              value={password}
-            />
+              <label className="sr-only" htmlFor="login-password">Password</label>
+              <Input
+                autoComplete="current-password"
+                id="login-password"
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="Enter your password"
+                required
+                type="password"
+                value={password}
+              />
+            </div>
 
             <Button
               type="button"
               variant="ghost"
-              className="self-end text-[13px]"
+              className="self-end text-[12px] h-auto p-0 min-h-0 text-muted-foreground hover:text-foreground"
               onClick={() => {
                 setError('')
                 setIsForgotPassword(true)

@@ -66,15 +66,15 @@ const SearchModal: FC<SearchModalProps> = ({
 
   return (
     <Dialog open={open} onClose={onClose ?? (() => {})} className="relative z-[2000]">
-      <div className="fixed inset-0 flex items-start justify-center bg-black/40 pt-[120px] backdrop-blur-sm">
-        <DialogPanel className="flex w-full max-w-[1040px] flex-col rounded-2xl bg-white p-8 shadow-2xl">
+      <div className="fixed inset-0 flex items-start justify-center bg-black/50 pt-[120px] backdrop-blur-sm transition-opacity duration-300">
+        <DialogPanel className="flex w-full max-w-[1040px] flex-col rounded-2xl border border-border bg-card p-8 shadow-2xl text-foreground transition-all duration-300 transform scale-100 animate-in fade-in zoom-in-95">
           {/* Search input */}
-          <div className="mb-8 flex items-center gap-3 rounded-xl border-2 border-[#8c6a40] bg-white px-5 py-3.5 shadow-sm">
-            <Search className="h-5 w-5 shrink-0 text-[#8c6a40]" strokeWidth={1.8} />
+          <div className="mb-8 flex items-center gap-3 rounded-xl border-2 border-primary bg-card px-5 py-3.5 shadow-sm focus-within:ring-2 focus-within:ring-primary/20 transition-all duration-200">
+            <Search className="h-5 w-5 shrink-0 text-primary" strokeWidth={1.8} />
             <input
               ref={inputRef}
               autoFocus
-              className="flex-1 bg-transparent text-[15px] text-[#191c1d] outline-none placeholder:text-[#9ca3af]"
+              className="flex-1 bg-transparent text-[15px] text-foreground outline-none placeholder:text-muted-foreground"
               placeholder="Search FAQs, categories, or status…"
               type="text"
               value={searchInput}
@@ -85,7 +85,7 @@ const SearchModal: FC<SearchModalProps> = ({
             {/* Selected-tag count indicator */}
             <div
               className={`flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold transition ${
-                pendingTags.length > 0 ? 'bg-[#8c6a40]/12 text-[#8c6a40]' : 'text-[#9ca3af]'
+                pendingTags.length > 0 ? 'bg-primary/15 text-primary' : 'text-muted-foreground'
               }`}
               title={`${pendingTags.length} categor${pendingTags.length === 1 ? 'y' : 'ies'} selected`}
             >
@@ -93,13 +93,13 @@ const SearchModal: FC<SearchModalProps> = ({
               {pendingTags.length}
             </div>
 
-            <span className="h-5 w-px shrink-0 bg-[#e5e7eb]" />
+            <span className="h-5 w-px shrink-0 bg-border" />
 
             <button
               type="button"
               onClick={onClose}
               aria-label="Close search"
-              className="shrink-0 text-[#9ca3af] transition hover:text-[#191c1d]"
+              className="shrink-0 text-muted-foreground transition hover:text-foreground p-1 rounded-full hover:bg-secondary focus:outline-none"
             >
               <X className="h-5 w-5" strokeWidth={1.8} />
             </button>
@@ -107,13 +107,13 @@ const SearchModal: FC<SearchModalProps> = ({
 
           {/* Categories (tags from DB) */}
           <div className="mb-2 flex items-center gap-4">
-            <span className="text-[11px] font-bold uppercase tracking-widest text-[#6b7280]">Categories</span>
-            <div className="h-px flex-1 bg-[#e5e7eb]" />
+            <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Categories</span>
+            <div className="h-px flex-1 bg-border" />
             {pendingTags.length > 0 && (
               <button
                 type="button"
                 onClick={() => setPendingTags([])}
-                className="text-[11px] font-medium text-[#8c6a40] underline-offset-2 transition hover:underline"
+                className="text-[11px] font-bold text-primary hover:text-primary/80 transition-colors uppercase tracking-wider"
               >
                 Clear
               </button>
@@ -121,7 +121,7 @@ const SearchModal: FC<SearchModalProps> = ({
           </div>
 
           {categories.length === 0 ? (
-            <p className="py-4 text-[12px] text-[#9ca3af]">No categories available yet.</p>
+            <p className="py-4 text-[12px] text-muted-foreground">No categories available yet.</p>
           ) : (
             <div className="flex flex-wrap gap-2 pt-3">
               {categories.map(({ tag, count }) => {
@@ -131,21 +131,21 @@ const SearchModal: FC<SearchModalProps> = ({
                   <button
                     key={tag}
                     type="button"
-                    className={`flex items-center gap-2 rounded-lg border px-3 py-1.5 text-left transition hover:-translate-y-0.5 hover:shadow-sm ${
-                      isSelected ? 'border-[#8c6a40] bg-[#8c6a40]/5' : 'border-[#e5e7eb] hover:border-[#8c6a40]'
+                    className={`flex items-center gap-2.5 rounded-lg border px-3.5 py-2 text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                      isSelected ? 'border-primary bg-primary/10' : 'border-border bg-secondary/35 hover:border-primary/50'
                     }`}
                     onClick={() => toggleTag(tag)}
                   >
                     <span
-                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md"
+                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-border/10 shadow-sm"
                       style={{ background: bg, color }}
                     >
                       <Icon className="h-3.5 w-3.5" strokeWidth={1.8} />
                     </span>
-                    <span className="text-[12px] font-semibold capitalize text-[#191c1d]">{tag}</span>
+                    <span className="text-[12px] font-semibold capitalize text-foreground">{tag}</span>
                     <span
                       className={`rounded px-1.5 py-0.5 text-[9px] font-bold ${
-                        isSelected ? 'bg-[#8c6a40] text-white' : 'bg-[#f3f4f6] text-[#4b5563]'
+                        isSelected ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'
                       }`}
                     >
                       {count}

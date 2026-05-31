@@ -9,9 +9,9 @@ import useAuthStore from '../../../../store/useAuthStore'
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 const TYPE_META = {
-  question: { icon: HelpCircle,   label: 'Question', color: '#8c6a40' },
-  answer:   { icon: CheckCircle2, label: 'Answer',  color: '#16a34a' },
-  comment:  { icon: MessageSquare, label: 'Comment', color: '#2563eb' },
+  question: { icon: HelpCircle,   label: 'Question', bgClass: 'bg-primary/10', textClass: 'text-primary' },
+  answer:   { icon: CheckCircle2, label: 'Answer',   bgClass: 'bg-green-500/10', textClass: 'text-green-600 dark:text-green-400' },
+  comment:  { icon: MessageSquare, label: 'Comment',  bgClass: 'bg-blue-500/10', textClass: 'text-blue-600 dark:text-blue-400' },
 }
 
 // ─── Component ─────────────────────────────────────────────────────────────
@@ -79,11 +79,11 @@ function MyContributionsPage() {
   // ── Detail view ──────────────────────────────────────────────────────────
   if (selectedId && detail) {
     return (
-      <div className="mx-auto w-full max-w-[900px] px-8 py-6">
+      <div className="mx-auto w-full max-w-[900px] px-8 py-6 animate-fade-in-up">
         <button
           type="button"
           onClick={handleBack}
-          className="mb-5 flex items-center gap-2 text-[13px] font-medium text-[#8c6a40] transition hover:text-[#6b5230]"
+          className="mb-5 flex items-center gap-2 text-sm font-semibold text-primary transition hover:text-primary/80"
         >
           ← Back to all contributions
         </button>
@@ -99,8 +99,8 @@ function MyContributionsPage() {
   // ── Loading ─────────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="flex flex-1 items-center justify-center">
-        <span className="h-6 w-6 animate-spin rounded-full border-2 border-[#c4c7c7] border-t-[#8c6a40]" />
+      <div className="flex flex-1 items-center justify-center py-16 animate-fade-in-up">
+        <span className="h-6 w-6 animate-spin rounded-full border-2 border-border border-t-primary" />
       </div>
     )
   }
@@ -108,44 +108,44 @@ function MyContributionsPage() {
   // ── Empty state ─────────────────────────────────────────────────────────
   if (contributions.length === 0) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center px-8 py-20 text-center">
-        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#edeeef]">
-          <MessageSquare className="h-7 w-7 text-[#9ca3af]" strokeWidth={1.5} />
+      <div className="flex flex-1 flex-col items-center justify-center px-8 py-20 text-center text-foreground animate-fade-in-up">
+        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-secondary">
+          <MessageSquare className="h-7 w-7 text-muted-foreground" strokeWidth={1.5} />
         </div>
-        <h3 className="mb-2 font-display text-[20px] font-bold text-[#191c1d]">No contributions yet</h3>
-        <p className="mb-6 text-[13px] text-[#6b7280]">
+        <h3 className="mb-2 font-display text-xl font-bold text-foreground">No contributions yet</h3>
+        <p className="mb-6 text-sm text-muted-foreground">
           Raise a query or answer a question to see your activity here.
         </p>
-        <button
+        <Button
           type="button"
           onClick={() => navigate('/raise-query')}
-          className="rounded-lg bg-[#0b1528] px-6 py-2.5 text-[13px] font-semibold text-white transition hover:bg-[#1e293b]"
+          className="px-6"
         >
           Raise a Query
-        </button>
+        </Button>
       </div>
     )
   }
 
   // ── List view ────────────────────────────────────────────────────────────
   return (
-    <div className="mx-auto w-full max-w-[900px] px-8 py-6">
+    <div className="mx-auto w-full max-w-[900px] px-8 py-6 text-foreground animate-fade-in-up">
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="font-display text-[22px] font-bold text-[#191c1d]">My Contributions</h2>
-        <span className="text-[12px] text-[#9ca3af]">{contributions.length} total</span>
+        <h2 className="font-display text-xl font-bold text-foreground">My Contributions</h2>
+        <span className="text-xs text-muted-foreground">{contributions.length} total</span>
       </div>
 
       {/* Tabs */}
-      <div className="mb-6 flex gap-1 rounded-xl bg-[#edeeef] p-1">
+      <div className="mb-6 flex gap-1 rounded-xl bg-secondary p-1">
         {tabs.map(tab => (
           <button
             key={tab.key}
             type="button"
             onClick={() => setActiveTab(tab.key)}
-            className={`flex-1 rounded-lg px-4 py-2 text-[13px] font-semibold transition ${
+            className={`flex-1 rounded-lg px-4 py-2 text-sm font-semibold transition ${
               activeTab === tab.key
-                ? 'bg-white text-[#191c1d] shadow-sm'
-                : 'text-[#6b7280] hover:text-[#191c1d]'
+                ? 'bg-card text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             {tab.label}
@@ -156,42 +156,36 @@ function MyContributionsPage() {
       {/* List */}
       <div className="flex flex-col gap-3">
         {filtered.length === 0 ? (
-          <p className="py-8 text-center text-[13px] text-[#9ca3af]">
+          <p className="py-8 text-center text-sm text-muted-foreground">
             No {activeTab} to show.
           </p>
         ) : (
           filtered.map(item => {
-            const { icon: Icon, label, color } = TYPE_META[item.type] ?? TYPE_META.question
+            const { icon: Icon, label, bgClass, textClass } = TYPE_META[item.type] ?? TYPE_META.question
             return (
               <div
                 key={`${item.type}-${item.id}`}
-                className="flex cursor-pointer items-start gap-4 rounded-xl border border-[#e5e7eb] bg-white p-5 transition hover:border-[#8c6a40] hover:shadow-sm"
+                className="flex cursor-pointer items-start gap-4 rounded-xl border border-border bg-card p-5 transition hover-card"
                 onClick={() => item.type === 'question' && handleCardClick(item.id)}
               >
                 {/* Type badge */}
-                <div
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
-                  style={{ background: `${color}15`, color }}
-                >
+                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${bgClass} ${textClass}`}>
                   <Icon className="h-5 w-5" strokeWidth={1.8} />
                 </div>
 
                 {/* Body */}
                 <div className="min-w-0 flex-1">
                   <div className="mb-1 flex items-center gap-2">
-                    <span
-                      className="rounded px-2 py-0.5 text-[10px] font-semibold uppercase"
-                      style={{ background: `${color}15`, color }}
-                    >
+                    <span className={`rounded px-2 py-0.5 text-[10px] font-semibold uppercase ${bgClass} ${textClass}`}>
                       {label}
                     </span>
                     {item.type === 'answer' && item.isAccepted && (
-                      <span className="flex items-center gap-1 rounded bg-[#dcfce7] px-2 py-0.5 text-[10px] font-semibold text-[#16a34a]">
+                      <span className="flex items-center gap-1 rounded bg-green-500/10 border border-green-500/20 px-2 py-0.5 text-[10px] font-semibold text-green-600 dark:text-green-400">
                         <CheckCircle2 className="h-3 w-3" strokeWidth={2} /> Accepted
                       </span>
                     )}
                     {item.type === 'question' && (
-                      <span className="flex items-center gap-1 text-[11px] text-[#9ca3af]">
+                      <span className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Clock className="h-3 w-3" strokeWidth={1.8} />
                         {new Date(item.time).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </span>
@@ -199,16 +193,16 @@ function MyContributionsPage() {
                   </div>
 
                   {item.type === 'question' ? (
-                    <h4 className="mb-1 text-[15px] font-semibold text-[#191c1d]">{item.title}</h4>
+                    <h4 className="mb-1 text-base font-semibold text-foreground">{item.title}</h4>
                   ) : null}
 
                   <p
-                    className="line-clamp-2 text-[13px] leading-5 text-[#6b7280]"
+                    className="line-clamp-2 text-sm leading-relaxed text-muted-foreground"
                     dangerouslySetInnerHTML={{ __html: item.body || '' }}
                   />
 
                   {/* Footer meta */}
-                  <div className="mt-2 flex items-center gap-4 text-[11px] text-[#9ca3af]">
+                  <div className="mt-2 flex items-center gap-4 text-xs text-muted-foreground">
                     {item.score > 0 && (
                       <span className="flex items-center gap-1">
                         <ChevronUp className="h-3 w-3" strokeWidth={2} />
@@ -219,7 +213,7 @@ function MyContributionsPage() {
                       <button
                         type="button"
                         onClick={e => { e.stopPropagation(); handleCardClick(item.questionId) }}
-                        className="text-[#8c6a40] underline-offset-2 transition hover:underline"
+                        className="text-primary hover:text-primary/80 underline-offset-2 transition hover:underline"
                       >
                         View question →
                       </button>

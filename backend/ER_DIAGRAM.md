@@ -21,6 +21,7 @@ erDiagram
     ROLE ||--o{ USER_ROLE_MAPPER : "role_id"
 
     USER ||--o{ QUESTION : "author_id"
+    USER ||--o{ QUESTION : "assigned_to (resolver)"
     USER ||--o{ ANSWER : "author_id"
     USER ||--o{ COMMENT : "author_id"
 
@@ -51,6 +52,9 @@ erDiagram
         string email UK
         string passwordHash "select:false"
         string status "active|disabled|suspended"
+        string status_reason
+        string status_updated_by "admin user_id"
+        date   status_updated_at
         number spark_points "cache: sum(SPARK_TRANSACTION.points)"
         date   last_login_at
         date   created_at
@@ -73,11 +77,15 @@ erDiagram
         array  tags
         boolean onboarding_completed
         number onboarding_step
+        date   created_at
+        date   updated_at
     }
 
     ROLE {
         string role_id PK
         string name UK "user|resolver|admin (lowercase)"
+        date   created_at
+        date   updated_at
     }
 
     USER_ROLE_MAPPER {
@@ -111,6 +119,10 @@ erDiagram
         date   last_activity_at
         string linked_faq_id FK "self → QUESTION"
         string moderation_status "approved|pending|rejected"
+        string moderated_by FK "user_id"
+        date   moderated_at
+        string moderation_reason
+        string removal_reason
         array  edit_history
         date   created_at
         date   updated_at
@@ -127,6 +139,8 @@ erDiagram
         array  references "{url,label}"
         array  attachments "{file_url,file_name,mime_type}"
         boolean is_expert
+        string expert_type
+        string specialty
         boolean is_accepted "the resolution"
         boolean is_official
         boolean is_deleted
@@ -138,6 +152,10 @@ erDiagram
         number top_level_comment_count "cache from COMMENT"
         object spark_award "{amount,awarded_at,transaction_id}"
         string moderation_status "approved|pending|rejected"
+        string moderated_by FK "user_id"
+        date   moderated_at
+        string moderation_reason
+        string removal_reason
         array  edit_history
         date   created_at
         date   updated_at
@@ -162,6 +180,9 @@ erDiagram
         boolean is_deleted
         string visibility
         string moderation_status "approved|pending|rejected"
+        string moderated_by FK "user_id"
+        date   moderated_at
+        string moderation_reason
         array  edit_history
         date   created_at
         date   updated_at
@@ -173,8 +194,7 @@ erDiagram
         string target_type "question|answer|comment"
         string target_id FK "polymorphic"
         number value "1 | -1"
-        date   created_at
-        date   updated_at
+        date   created_at "createdAt only — no updated_at"
     }
 
     FLAG {
@@ -189,6 +209,8 @@ erDiagram
         date   reviewed_at
         string review_action
         string resolution_note
+        date   created_at
+        date   updated_at
     }
 
     NOTIFICATION {
@@ -202,19 +224,17 @@ erDiagram
         string reference_type "question|answer|comment|user"
         object thread_anchor "{answer_id,root_comment_id}"
         boolean is_read
-        date   created_at
-        date   updated_at
+        date   created_at "createdAt only — no updated_at"
     }
 
     SPARK_TRANSACTION {
         string transaction_id PK
         string user_id FK
-        string action "SUBMIT_QUESTION|SUBMIT_ANSWER|ANSWER_UPVOTED|ANSWER_ACCEPTED|DAILY_LOGIN|QUESTION_BOUNTY|BOUNTY_AWARDED|..."
+        string action "app-defined, no DB enum: SUBMIT_QUESTION|SUBMIT_ANSWER|ANSWER_UPVOTED|ANSWER_ACCEPTED|ADD_REFERENCE|DAILY_LOGIN|EXPERT_VERIFIED|QUESTION_BOUNTY|BOUNTY_AWARDED"
         number points "signed (+/-)"
         string reference_id "polymorphic"
         string reference_type "question|answer"
-        date   created_at
-        date   updated_at
+        date   created_at "createdAt only — no updated_at"
     }
 
     QUESTION_ASSIGNMENT_LOG {
