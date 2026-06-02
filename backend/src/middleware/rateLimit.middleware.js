@@ -12,7 +12,7 @@ export const questionCreationLimiter = rateLimit({
   legacyHeaders: false,
   keyGenerator: (req) => {
     // req.user is populated by verifyToken middleware (runs before this limiter)
-    return req.user?.userId || ipKeyGenerator(req.ip)
+    return req.user?.userId || ipKeyGenerator(req, req.res)
   },
   message: {
     success: false,

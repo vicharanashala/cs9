@@ -14,8 +14,31 @@ const STATUS_BADGE = {
   Active:        'bg-brand/10 text-brand',
 }
 
+const FALLBACK_CATEGORIES = [{ value: 'others', label: 'Others' }]
+
 function stripHtml(s = '') {
   return s.replace(/<[^>]*>/g, '').trim()
+}
+
+function categoryOptionsFromTags(tags = []) {
+  const options = (tags || []).map(t => ({
+    value: t.tag,
+    label: t.tag.charAt(0).toUpperCase() + t.tag.slice(1),
+  }))
+  const hasOthers = options.some(option => option.value.toLowerCase() === 'others')
+
+  return hasOthers ? options : [...options, ...FALLBACK_CATEGORIES]
+}
+
+function submitErrorMessage(err) {
+  if (err.response?.status === 401) {
+    return 'Your session has expired. Please log in again.'
+  }
+  if (!err.response) {
+    return 'Could not reach the server. Please check that the backend is running.'
+  }
+
+  return err.response?.data?.message || 'Could not submit your query.'
 }
 
 function RaiseQueryPage() {
@@ -40,20 +63,13 @@ function RaiseQueryPage() {
   // Category options come from the DB tags so the query lands in the right bucket
   useEffect(() => {
     fetchQuestionTags()
-      .then(tags =>
-        setCategories([
-          ...(tags || []).map(t => ({
-            value: t.tag,
-            label: t.tag.charAt(0).toUpperCase() + t.tag.slice(1),
-          })),
-          { value: 'others', label: 'Others' },
-        ]),
-      )
-      .catch(() => setCategories([]))
+      .then(tags => setCategories(categoryOptionsFromTags(tags)))
+      .catch(() => setCategories(FALLBACK_CATEGORIES))
   }, [])
 
   async function handleSubmit(e) {
     e.preventDefault()
+    if (submitting) return
     if (!category)                return notifyError('Please choose a category.')
     if (title.trim().length < 10) return notifyError('Title must be at least 10 characters.')
     if (!description.trim())      return notifyError('Please add a description.')
@@ -64,7 +80,7 @@ function RaiseQueryPage() {
       setSubmitted(true)
       setTimeout(() => navigate('/dashboard'), 2500)
     } catch (err) {
-      notifyError(err.response?.data?.message || 'Could not submit your query.')
+      notifyError(submitErrorMessage(err))
     } finally {
       setSubmitting(false)
     }

@@ -9,7 +9,7 @@ import AnswerComments from '../../components/AnswerComments/AnswerComments'
 import Button from '../../../../components/Button/Button'
 import {
   fetchQuestionDetail, fetchQuestions, postAnswer, voteAnswer, reportContent, postComment,
-  resolveQuestion, acceptAnswer,
+  resolveQuestion, acceptAnswer, recordQuestionView,
 } from '../../service'
 import { notifySuccess, notifyError } from '../../../../lib/notify'
 
@@ -45,7 +45,9 @@ function QueryDetailPage() {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      setData(await fetchQuestionDetail(queryId))
+      const result = await fetchQuestionDetail(queryId)
+      setData(result)
+      recordQuestionView(queryId)
     } catch {
       setData(null)
     } finally {
@@ -281,6 +283,7 @@ function QueryDetailPage() {
                   onAccept={() => handleAcceptAnswer(ans.answer_id)}
                   onVoteUp={() => handleVote(ans.answer_id, 'up')}
                   onVoteDown={() => handleVote(ans.answer_id, 'down')}
+                  authorRole={ans.author_role}
                   onReport={() => setReportTarget({ type: 'answer', id: ans.answer_id })}
                 >
                   {!hidden && (
@@ -412,7 +415,7 @@ function QueryDetailPage() {
 
 // ── Thread item (OP or answer) ──────────────────────────────────────────────
 function ThreadItem({
-  authorName, isSelf, date, body, isOriginal, accepted, score, myVote = 0,
+  authorName, isSelf, authorRole, date, body, isOriginal, accepted, score, myVote = 0,
   moderationState = 'visible', canAccept = false, onAccept, onVoteUp, onVoteDown, onReport, children,
 }) {
   const initials = initialsOf(authorName)
@@ -495,7 +498,9 @@ function ThreadItem({
                 </button>
               )}
               {isSelf ? (
-                <span className="text-[11px] italic text-text-muted">Cannot report own comment</span>
+                <span className="text-[11px] italic text-text-muted">Cannot report own reply</span>
+              ) : authorRole === 'ADMIN' ? (
+                <span className="text-[11px] italic text-text-muted">Cannot report admin</span>
               ) : (
                 <button
                   type="button"
