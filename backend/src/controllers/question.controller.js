@@ -189,7 +189,26 @@ export async function createQuestion(req, res, next) {
       throw createHttpError(400, 'Spark bounty must be a non-negative integer')
     }
 
+    const kind = (req.body.kind === 'faq' && isAdmin(req)) ? 'faq' : 'community'
+    const status = kind === 'faq' ? 'published' : 'unanswered'
+
+    let slug = undefined
+    if (kind === 'faq') {
+      const baseSlug = req.body.title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+      slug = baseSlug
+      const existing = await Question.findOne({ slug })
+      if (existing) {
+        slug = `${baseSlug}-${Date.now()}`
+      }
+    }
+
     question = await Question.create({
+      kind,
+      status,
+      slug,
       title: req.body.title,
       body: req.body.body,
       tags: req.body.tags,
@@ -209,6 +228,7 @@ export async function createQuestion(req, res, next) {
     res.status(201).json({
       success: true,
       questionId: question.question_id,
+      question,
       message: 'Question created',
     })
   } catch (error) {
