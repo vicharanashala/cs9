@@ -2,6 +2,14 @@ import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
+import dns from "dns";
+
+// Configure public DNS servers to resolve mongodb+srv records (local DNS might block/fail SRV lookups on Windows)
+try {
+  dns.setServers(["8.8.8.8", "8.8.4.4", "1.1.1.1"]);
+} catch (e) {
+  console.warn("Failed to set custom DNS servers:", e.message);
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

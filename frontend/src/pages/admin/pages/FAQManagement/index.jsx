@@ -4,6 +4,7 @@ import Modal from '../../../../components/Modal/Modal'
 import Button from '../../../../components/Button/Button'
 import { notifyError, notifySuccess } from '../../../../lib/notify'
 import { fetchFAQs, updateFAQ, deleteFAQ, createFAQ, fetchTags, createTag, renameTag, deleteTag } from '../../service'
+import { parseMarkdown } from '../../../../lib/markdown'
 
 const EMPTY_FORM = { title: '', body: '', tags: '' }
 const PAGE_SIZE = 10
@@ -12,6 +13,10 @@ const EMPTY_TAG_FORM = { name: '', description: '' }
 // Shared field styling (Stitch "Add FAQ" redesign), mapped to our theme tokens.
 const LABEL_CLS = 'mb-2 block text-[11px] font-bold uppercase tracking-[0.08em] text-text-muted transition-colors group-focus-within:text-text-primary'
 const INPUT_CLS = 'w-full rounded-lg border border-border bg-bg-primary px-4 py-2.5 text-[13px] text-text-primary placeholder:text-text-muted outline-none transition focus:border-text-primary focus:ring-1 focus:ring-text-primary'
+
+function stripHtml(html = '') {
+  return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+}
 
 // Sectioned create/edit FAQ modal — header (serif title + subtitle), grouped
 // fields with focus-aware labels, leading tag icon, and a ghost/black footer.
@@ -137,7 +142,7 @@ function FAQManagementView() {
     setEditing(faq)
     setForm({
       title: faq.title || '',
-      body: faq.body || '',
+      body: stripHtml(faq.body || ''),
       tags: (faq.tags || []).join(', '),
     })
   }
@@ -274,7 +279,7 @@ function FAQManagementView() {
                   <p className="text-[14px] font-semibold text-text-primary">{faq.title}</p>
                   <p
                     className="mt-1 line-clamp-2 text-[12px] text-text-secondary"
-                    dangerouslySetInnerHTML={{ __html: faq.body || '' }}
+                    dangerouslySetInnerHTML={{ __html: parseMarkdown(faq.body) || '' }}
                   />
                   {(faq.tags || []).length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-1.5">

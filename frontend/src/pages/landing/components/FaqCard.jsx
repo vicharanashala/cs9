@@ -1,4 +1,5 @@
 import { ChevronDown } from 'lucide-react'
+import { parseMarkdown } from '../../../lib/markdown'
 
 function getQuestionLabel(faq) {
   const category = String(faq.category || '').trim()
@@ -34,7 +35,7 @@ function FaqCard({ faq, sectionId, isOpen, onToggle }) {
         }`}
       >
         <div className="overflow-hidden">
-          <p className="px-4 pb-4 text-[13px] leading-6 text-text-secondary" dangerouslySetInnerHTML={{ __html: faq.answer }} />
+          <p className="px-4 pb-4 text-[13px] leading-6 text-text-secondary" dangerouslySetInnerHTML={{ __html: parseMarkdown(faq.answer) }} />
         </div>
       </div>
     </article>
