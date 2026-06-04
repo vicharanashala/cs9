@@ -1,6 +1,7 @@
 import { validationResult } from 'express-validator'
 import argon2 from 'argon2'
 import Answer from '../models/answer.model.js'
+import Approval from '../models/approval.model.js'
 import Comment from '../models/comment.model.js'
 import Flag from '../models/flag.model.js'
 import Notification from '../models/notification.model.js'
@@ -101,12 +102,15 @@ export async function getAdminDashboard(req, res, next) {
     const [
       totalUsers, usersThisWeek, usersThisMonth,
       totalQuestions, questionsByKind,
-      totalAnswers,
+      seekApprovalCount,
+      approvedCount,
       openFlags,
       totalSparks,
       recentQuestions,
       recentUsers,
       recentFlags,
+      timeToResolveRaw,
+      answersByRoleRaw,
       tagStats,
       hourlyTraffic,
     ] = await Promise.all([
@@ -118,7 +122,8 @@ export async function getAdminDashboard(req, res, next) {
         { $match: periodFilter },
         { $group: { _id: '$kind', count: { $sum: 1 } } },
       ]),
-      Answer.countDocuments(periodFilter),
+      Question.countDocuments({ approval_status: 'pending' }),
+      Question.countDocuments({ approval_status: 'approved' }),
       Flag.countDocuments(openFlagFilter),
       SparkTransaction.aggregate([
         { $match: periodFilter.created_at ? { created_at: periodFilter.created_at } : {} },
@@ -138,6 +143,23 @@ export async function getAdminDashboard(req, res, next) {
         .sort({ created_at: -1 })
         .limit(5)
         .lean(),
+      Question.aggregate([
+        { $match: { ...periodFilter, status: 'closed' } },
+        { $project: { timeDiffMs: { $subtract: ['$updated_at', '$created_at'] } } },
+        { $project: { timeDiffHours: { $divide: ['$timeDiffMs', 3600000] } } },
+        {
+          $bucket: {
+            groupBy: '$timeDiffHours',
+            boundaries: [0, 1, 4, 24],
+            default: 'Over 24h',
+            output: { count: { $sum: 1 } },
+          },
+        },
+      ]),
+      Answer.aggregate([
+        { $match: periodFilter },
+        { $group: { _id: '$author_role', count: { $sum: 1 } } }
+      ]),
       Question.aggregate([
         { $match: { ...periodFilter, tags: { $exists: true, $ne: [] } } },
         { $unwind: { path: '$tags', preserveNullAndEmptyArrays: false } },
@@ -159,7 +181,6 @@ export async function getAdminDashboard(req, res, next) {
         { $sort: { total: -1 } },
         { $limit: 10 },
       ]),
-      // Hourly traffic for last 24h — single pipeline that returns all three series
       hourlyTrafficAggregation(since24h),
     ])
 
@@ -187,7 +208,8 @@ export async function getAdminDashboard(req, res, next) {
           faq: kindMap.faq ?? 0,
           community: kindMap.community ?? 0,
         },
-        answers: { total: totalAnswers },
+        seekApproval: { total: seekApprovalCount },
+        approvedCount: { total: approvedCount },
         flags: { open: openFlags },
         sparks: { total: sparkTotal },
       },
@@ -197,6 +219,18 @@ export async function getAdminDashboard(req, res, next) {
         flags: recentFlags,
       },
       charts: {
+        resolutionSpeed: timeToResolveRaw.map(b => {
+          let label = ''
+          if (b._id === 0) label = '< 1h'
+          else if (b._id === 1) label = '1-4h'
+          else if (b._id === 4) label = '4-24h'
+          else label = '> 24h'
+          return { name: label, count: b.count }
+        }),
+        supportLoad: answersByRoleRaw.map(a => ({
+          name: (a._id || 'USER').toUpperCase(),
+          value: a.count,
+        })),
         categories: tagStats.map(t => ({
           category: t.tag.charAt(0).toUpperCase() + t.tag.slice(1),
           total: t.total,
@@ -672,6 +706,92 @@ export async function adminCommentAndResolve(req, res, next) {
     next(error)
   }
 }
+
+/**
+ * Seek approval from a higher authority for an unresolved query.
+ */
+export async function adminSeekApproval(req, res, next) {
+  try {
+    const { adminId, adminName } = req.body
+    if (!adminId || !adminName) {
+      throw createHttpError(400, 'Admin ID and Name are required')
+    }
+
+    const question = await Question.findOne({ question_id: req.params.questionId })
+
+    if (!question || question.status === 'removed') {
+      throw createHttpError(404, 'Question not found')
+    }
+
+    await Question.updateOne(
+      { question_id: question.question_id },
+      {
+        $set: {
+          approval_requested_from: adminId,
+          approval_requested_from_name: adminName,
+          approval_status: 'pending',
+        },
+      },
+    )
+
+    await Approval.create({
+      question_id: question.question_id,
+      requested_by: req.user.userId,
+      requested_from: adminId,
+      requested_from_name: adminName,
+      status: 'pending',
+    })
+
+    res.status(201).json({
+      success: true,
+      message: `Approval requested from ${adminName}`,
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+/**
+ * Mark a pending approval as received and clear the flag.
+ */
+export async function adminMarkApprovalReceived(req, res, next) {
+  try {
+    const question = await Question.findOne({ question_id: req.params.questionId })
+
+    if (!question || question.status === 'removed') {
+      throw createHttpError(404, 'Question not found')
+    }
+
+    if (!question.approval_requested_from) {
+      throw createHttpError(400, 'This question is not currently under approval')
+    }
+
+    // Update the most recent pending approval record
+    await Approval.findOneAndUpdate(
+      { question_id: question.question_id, status: 'pending' },
+      { $set: { status: 'approved' } },
+      { sort: { created_at: -1 } }
+    )
+
+    // Clear the flags from the question
+    await Question.updateOne(
+      { question_id: question.question_id },
+      {
+        $set: {
+          approval_status: 'approved',
+        },
+      },
+    )
+
+    res.status(200).json({
+      success: true,
+      message: 'Approval marked as received',
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
 
 export async function exportQuestionToFAQ(req, res, next) {
   try {

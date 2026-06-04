@@ -6,9 +6,7 @@ import {
   ClipboardList,
   Clock,
   Download,
-  ShieldAlert,
   RefreshCw,
-  SlidersHorizontal,
   TrendingDown,
   TrendingUp,
   HelpCircle,
@@ -20,6 +18,9 @@ import {
   Legend,
   Line,
   LineChart,
+  Pie,
+  PieChart,
+  Cell,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -67,15 +68,14 @@ function MetricCard({ title, value, Icon, iconClassName, trend, trendType = 'up'
 }
 
 
-function DashboardView({ dashboardData, isLoading, onRefresh, onNavigate }) {
+function DashboardView({ dashboardData, isLoading, onRefresh, onNavigate, onOpenQuery }) {
   const metrics = dashboardData?.metrics || {}
-  const recent = dashboardData?.recent || {}
   const questionMetrics = metrics.questions || {}
   const usersMetrics = metrics.users || {}
   const flagsMetrics = metrics.flags || {}
-  const recentFlags = recent.flags || []
+  const resolutionSpeedData = dashboardData?.charts?.resolutionSpeed || []
+  const supportLoadData = dashboardData?.charts?.supportLoad || []
   const categoryData = dashboardData?.charts?.categories || []
-  const attentionRows = recentFlags.slice(0, 5)
 
   const [unresolvedQueries, setUnresolvedQueries] = useState([])
   const [unresolvedCount, setUnresolvedCount] = useState(0)
@@ -96,6 +96,7 @@ function DashboardView({ dashboardData, isLoading, onRefresh, onNavigate }) {
     fetchUnresolved()
     return () => { active = false }
   }, [])
+
 
   return (
     <div className="flex-1 overflow-y-auto p-5 lg:p-8">
@@ -143,12 +144,13 @@ function DashboardView({ dashboardData, isLoading, onRefresh, onNavigate }) {
           onClick={() => onNavigate('faqManagement')}
         />
         <MetricCard
-          title="Answers"
-          value={formatNumber(metrics.answers?.total)}
+          title="Under approval"
+          value={formatNumber(metrics.seekApproval?.total)}
           Icon={Clock}
-          iconClassName="bg-violet-50 text-violet-700 dark:bg-violet-950/40 dark:text-violet-200"
-          trendType="down"
-          trend="Live"
+          iconClassName="bg-orange-50 text-orange-700 dark:bg-orange-950/40 dark:text-orange-200"
+          trendType="up"
+          trend="Pending"
+          onClick={() => onNavigate('queriesManagement', { state: { hasApproval: 'true' } })}
         />
         <MetricCard
           title="Open Flags"
@@ -197,7 +199,11 @@ function DashboardView({ dashboardData, isLoading, onRefresh, onNavigate }) {
                 </tr>
               ) : (
                 unresolvedQueries.map((q) => (
-                  <tr key={q.question_id} className="border-b border-border-light last:border-b-0">
+                  <tr 
+                    key={q.question_id} 
+                    className="border-b border-border-light last:border-b-0 cursor-pointer hover:bg-bg-secondary transition"
+                    onClick={() => onOpenQuery?.(q.question_id)}
+                  >
                     <td className="px-5 py-4 font-bold text-text-primary">
                       #{q.question_id?.slice(0, 8)}
                     </td>
@@ -220,7 +226,135 @@ function DashboardView({ dashboardData, isLoading, onRefresh, onNavigate }) {
         </div>
       </section>
 
-      <div data-tour="admin-charts" className="mb-8 grid grid-cols-1 gap-5 xl:grid-cols-2">
+
+
+
+
+
+
+      <div data-tour="admin-stats-summary" className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="rounded-lg border border-border-light bg-bg-card p-4">
+          <p className="text-[11px] font-bold uppercase tracking-wide text-text-muted">Users</p>
+          <p className="mt-2 text-[22px] font-semibold text-text-primary">
+            {formatNumber(usersMetrics.total)}
+          </p>
+        </div>
+        <div className="rounded-lg border border-border-light bg-bg-card p-4">
+          <p className="text-[11px] font-bold uppercase tracking-wide text-text-muted">
+            New this week
+          </p>
+          <p className="mt-2 text-[22px] font-semibold text-text-primary">
+            {formatNumber(usersMetrics.thisWeek)}
+          </p>
+        </div>
+        <div className="rounded-lg border border-border-light bg-bg-card p-4">
+          <p className="text-[11px] font-bold uppercase tracking-wide text-text-muted">
+            Spark Ledger
+          </p>
+          <p className="mt-2 text-[22px] font-semibold text-text-primary">
+            {formatNumber(metrics.sparks?.total)}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => onNavigate?.('queriesManagement', { state: { hasApproval: 'approved' } })}
+          className="rounded-lg border border-border-light bg-bg-card p-4 text-left transition hover:border-brand hover:shadow-md"
+        >
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-wide text-text-muted">
+                Approval received
+              </p>
+              <p className="mt-2 text-[22px] font-semibold text-text-primary">
+                {formatNumber(metrics.approvedCount?.total || 0)}
+              </p>
+            </div>
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+              <CheckCircle className="h-4 w-4" strokeWidth={1.8} />
+            </div>
+          </div>
+        </button>
+      </div>
+
+      <div data-tour="admin-charts" className="mt-8 grid grid-cols-1 gap-5 xl:grid-cols-2">
+        <section className="rounded-lg border border-border-light bg-bg-card p-5 shadow-sm">
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-[17px] font-bold text-text-primary">Resolution Speed (SLA Health)</h2>
+              <p className="mt-1 text-[12px] text-text-muted">Time taken to resolve questions (lower is better).</p>
+            </div>
+          </div>
+          <div className="h-[260px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={resolutionSpeedData}
+                margin={{ top: 8, right: 8, left: -16, bottom: 0 }}
+                barGap={4}
+                barCategoryGap="24%"
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-light)" vertical={false} />
+                <XAxis
+                  dataKey="name"
+                  tick={{ fontSize: 10, fontWeight: 700, fill: 'var(--color-text-secondary)' }}
+                  tickLine={false}
+                  axisLine={{ stroke: 'var(--color-border-light)' }}
+                />
+                <YAxis
+                  tick={{ fontSize: 10, fill: 'var(--color-text-secondary)' }}
+                  tickLine={false}
+                  axisLine={false}
+                  width={36}
+                  allowDecimals={false}
+                />
+                <Tooltip
+                  cursor={{ fill: 'var(--color-bg-secondary)' }}
+                  contentStyle={{ borderRadius: 8, border: '1px solid var(--color-border-light)', fontSize: 12 }}
+                  labelStyle={{ fontWeight: 700, color: 'var(--color-text-primary)' }}
+                />
+                <Bar dataKey="count" name="Questions" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={30} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </section>
+
+        <section className="rounded-lg border border-border-light bg-bg-card p-5 shadow-sm">
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-[17px] font-bold text-text-primary">Community Independence</h2>
+              <p className="mt-1 text-[12px] text-text-muted">Answers provided by role (shows self-sustainability).</p>
+            </div>
+          </div>
+          <div className="h-[260px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={supportLoadData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={90}
+                  paddingAngle={2}
+                >
+                  {supportLoadData.map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={entry.name === 'ADMIN' ? '#f43f5e' : entry.name === 'RESOLVER' ? '#3b82f6' : '#10b981'} 
+                    />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  contentStyle={{ borderRadius: 8, border: '1px solid var(--color-border-light)', fontSize: 12 }}
+                  itemStyle={{ fontWeight: 600 }}
+                />
+                <Legend verticalAlign="bottom" height={36} iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12, fontWeight: 500 }} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </section>
+
+
         <section className="rounded-lg border border-border-light bg-bg-card p-5 shadow-sm">
           <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="text-[17px] font-bold text-text-primary">Query Volume by Category</h2>
@@ -326,121 +460,19 @@ function DashboardView({ dashboardData, isLoading, onRefresh, onNavigate }) {
                   dot={false}
                   activeDot={{ r: 4 }}
                 />
+                <Line
+                  type="monotone"
+                  dataKey="comments"
+                  name="Comments"
+                  stroke="#d97706"
+                  strokeWidth={2}
+                  dot={false}
+                  activeDot={{ r: 4 }}
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
         </section>
-
-      </div>
-
-
-      <section data-tour="admin-moderation" className="overflow-hidden rounded-lg border border-border-light bg-bg-card shadow-sm">
-        <div className="flex flex-col gap-3 border-b border-border-light px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-[17px] font-bold text-text-primary">Needs Attention</h2>
-            <p className="mt-1 text-[12px] text-text-muted">
-              Showing {attentionRows.length} open moderation items
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => onNavigate?.('flagModeration')}
-            className="flex items-center gap-2 text-[12px] font-semibold text-brand transition hover:text-brand-hover"
-          >
-            <ShieldAlert className="h-4 w-4" strokeWidth={1.8} />
-            Review flags
-          </button>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[760px] border-collapse text-[13px]">
-            <thead>
-              <tr className="border-b border-border-light bg-bg-tertiary text-left text-[11px] font-bold uppercase tracking-wide text-text-muted">
-                <th className="px-5 py-3">ID</th>
-                <th className="px-5 py-3">Target</th>
-                <th className="px-5 py-3">Reason</th>
-                <th className="px-5 py-3">Status</th>
-                <th className="px-5 py-3">Reviewer</th>
-              </tr>
-            </thead>
-            <tbody>
-              {attentionRows.length === 0 ? (
-                <tr>
-                  <td className="px-5 py-6 text-center text-text-muted" colSpan={5}>
-                    No escalated items need attention.
-                  </td>
-                </tr>
-              ) : (
-                attentionRows.map((flag) => (
-                  <tr key={flag.flag_id} className="border-b border-border-light last:border-b-0">
-                    <td className="px-5 py-4 font-bold text-text-primary">
-                      #{flag.flag_id?.slice(0, 8) || 'FLAG'}
-                    </td>
-                    <td className="px-5 py-4 capitalize text-text-secondary">
-                      {flag.target_type || 'content'} {flag.target_id?.slice(0, 8) || ''}
-                    </td>
-                    <td className="max-w-[320px] truncate px-5 py-4 text-text-secondary">
-                      {flag.reason || 'Pending review'}
-                    </td>
-                    <td className="px-5 py-4">
-                      <span className="rounded bg-red-50 px-2 py-1 text-[10px] font-bold uppercase text-red-700">
-                        {flag.status || 'pending'}
-                      </span>
-                    </td>
-                    <td className="px-5 py-4 text-text-secondary">
-                      {flag.reviewed_by || 'Admin queue'}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <div data-tour="admin-stats-summary" className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-lg border border-border-light bg-bg-card p-4">
-          <p className="text-[11px] font-bold uppercase tracking-wide text-text-muted">Users</p>
-          <p className="mt-2 text-[22px] font-semibold text-text-primary">
-            {formatNumber(usersMetrics.total)}
-          </p>
-        </div>
-        <div className="rounded-lg border border-border-light bg-bg-card p-4">
-          <p className="text-[11px] font-bold uppercase tracking-wide text-text-muted">
-            New this week
-          </p>
-          <p className="mt-2 text-[22px] font-semibold text-text-primary">
-            {formatNumber(usersMetrics.thisWeek)}
-          </p>
-        </div>
-        <div className="rounded-lg border border-border-light bg-bg-card p-4">
-          <p className="text-[11px] font-bold uppercase tracking-wide text-text-muted">
-            Spark Ledger
-          </p>
-          <p className="mt-2 text-[22px] font-semibold text-text-primary">
-            {formatNumber(metrics.sparks?.total)}
-          </p>
-        </div>
-        <button
-          data-tour="admin-settings-shortcut"
-          type="button"
-          onClick={() => onNavigate?.('settings')}
-          className="rounded-lg border border-border-light bg-bg-card p-4 text-left transition hover:border-brand hover:shadow-md"
-        >
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-[11px] font-bold uppercase tracking-wide text-text-muted">
-                Settings
-              </p>
-              <p className="mt-2 text-[13px] font-semibold text-text-primary">
-                Scoring & thresholds
-              </p>
-            </div>
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand/10 text-brand">
-              <SlidersHorizontal className="h-4 w-4" strokeWidth={1.8} />
-            </div>
-          </div>
-        </button>
       </div>
     </div>
   )

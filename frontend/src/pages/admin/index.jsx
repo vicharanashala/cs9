@@ -199,6 +199,7 @@ function AdminHome() {
     searchQuery,
     onRefresh: loadDashboard,
     onNavigate: navigateAdmin,
+    onOpenQuery: openQuery,
   }
 
   return (

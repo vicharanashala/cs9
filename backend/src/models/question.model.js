@@ -138,6 +138,20 @@ const questionSchema = new mongoose.Schema(
       index: true,
     },
 
+    approval_requested_from: {
+      type: String,
+      default: null,
+    },
+    approval_requested_from_name: {
+      type: String,
+      default: null,
+    },
+    approval_status: {
+      type: String,
+      enum: ['pending', 'approved'],
+      default: null,
+    },
+
     view_count: {
       type: Number,
       default: 0,

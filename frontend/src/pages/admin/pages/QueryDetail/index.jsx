@@ -4,7 +4,7 @@ import {
   User, Clock, Loader, ShieldCheck, VenetianMask, Eye, Award, Trash2, AlertTriangle, Send, RotateCcw,
 } from 'lucide-react'
 import { fetchQuestionDetail, unacceptAnswer } from '../../../user/service'
-import { adminResolveQuery, exportToFAQ, fetchTags } from '../../service'
+import { adminResolveQuery, adminSeekApproval, adminMarkApprovalReceived, exportToFAQ, fetchTags, fetchUsers } from '../../service'
 import { notifyError, notifySuccess } from '../../../../lib/notify'
 import useAuthStore from '../../../../store/useAuthStore'
 import { parseMarkdown } from '../../../../lib/markdown'
@@ -195,7 +195,9 @@ function AdminQueryDetailView({ queryId, onBack }) {
   const [error, setError]     = useState(false)
   const [comment, setComment] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const [commentTab, setCommentTab] = useState('write') // 'write' | 'preview'
+  const [commentTab, setCommentTab] = useState('write') // 'write' | 'seek_approval'
+  const [admins, setAdmins] = useState([])
+  const [selectedAdmin, setSelectedAdmin] = useState('')
 
   const [showExportModal, setShowExportModal] = useState(false)
   const [exportForm, setExportForm] = useState({ title: '', body: '', tags: '' })
@@ -291,6 +293,13 @@ function AdminQueryDetailView({ queryId, onBack }) {
 
   useEffect(() => { load() }, [load])
 
+  useEffect(() => {
+    fetchUsers({ role: 'admin', limit: 100 }).then(res => {
+      // Filter out the current user from the list if desired, but we can leave it
+      setAdmins(res.users)
+    }).catch(console.error)
+  }, [])
+
   async function submitComment() {
     if (!comment.trim() || submitting) return
     setSubmitting(true)
@@ -301,6 +310,36 @@ function AdminQueryDetailView({ queryId, onBack }) {
       await load()
     } catch (err) {
       notifyError(err?.response?.data?.message || 'Could not post comment.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  async function submitApproval() {
+    if (submitting || !selectedAdmin) return
+    setSubmitting(true)
+    try {
+      const adminName = admins.find(a => a.id === selectedAdmin)?.name || 'Admin'
+      await adminSeekApproval(queryId, selectedAdmin, adminName)
+      notifySuccess(`Approval requested from ${adminName}.`)
+      setCommentTab('write')
+      await load()
+    } catch (err) {
+      notifyError(err?.response?.data?.message || 'Could not seek approval.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  async function markApprovalReceived() {
+    if (submitting) return
+    setSubmitting(true)
+    try {
+      await adminMarkApprovalReceived(queryId)
+      notifySuccess('Approval marked as received!')
+      await load()
+    } catch (err) {
+      notifyError(err?.response?.data?.message || 'Could not update approval status.')
     } finally {
       setSubmitting(false)
     }
@@ -396,6 +435,17 @@ function AdminQueryDetailView({ queryId, onBack }) {
 
   return (
     <div className="flex-1 overflow-y-auto p-5 lg:p-8">
+      {q.approval_status === 'pending' && (
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-orange-200 bg-orange-50 px-5 py-4 shadow-sm">
+          <div className="flex items-center gap-2 text-orange-800">
+            <AlertTriangle className="h-5 w-5" />
+            <span className="text-[14px] font-semibold">
+              Pending for approval from higher authority: {q.approval_requested_from_name}
+            </span>
+          </div>
+        </div>
+      )}
+
       <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
         {BackButton}
         <div className="flex items-center gap-2">
@@ -424,6 +474,12 @@ function AdminQueryDetailView({ queryId, onBack }) {
           <Badge className={`${STATUS_STYLE[q.status] || 'bg-gray-100 text-gray-600'} ${q.moderation_status === 'pending' ? 'opacity-50' : ''}`}>{q.status}</Badge>
           {q.moderation_status && q.moderation_status !== 'approved' && (
             <Badge className="bg-amber-50 text-amber-700">{q.moderation_status === 'pending' ? 'Under review' : q.moderation_status}</Badge>
+          )}
+          {q.approval_status === 'pending' && (
+            <Badge className="bg-orange-50 text-orange-700">Approval pending: {q.approval_requested_from_name}</Badge>
+          )}
+          {q.approval_status === 'approved' && (
+            <Badge className="bg-emerald-50 text-emerald-700"><CheckCircle className="mr-0.5 inline h-3 w-3" strokeWidth={2.4} /> Approval received: {q.approval_requested_from_name}</Badge>
           )}
           {q.is_anonymous && (
             <Badge className="bg-indigo-50 text-indigo-700"><VenetianMask className="mr-0.5 inline h-3 w-3" strokeWidth={2.2} /> Anonymous</Badge>
@@ -549,14 +605,14 @@ function AdminQueryDetailView({ queryId, onBack }) {
             </button>
             <button
               type="button"
-              onClick={() => setCommentTab('preview')}
+              onClick={() => setCommentTab('seek_approval')}
               className={`px-3 py-1 text-[11px] font-bold rounded transition ${
-                commentTab === 'preview'
+                commentTab === 'seek_approval'
                   ? 'bg-bg-card text-brand shadow-sm'
                   : 'text-text-muted hover:text-text-primary'
               }`}
             >
-              Preview
+              Seek Approval
             </button>
           </div>
         </div>
@@ -570,24 +626,55 @@ function AdminQueryDetailView({ queryId, onBack }) {
             className="w-full resize-none rounded-lg border border-border bg-bg-primary px-4 py-3 text-[13px] text-text-primary placeholder:text-text-muted outline-none transition focus:border-text-primary focus:ring-1 focus:ring-text-primary"
           />
         ) : (
-          <div
-            className="markdown-body min-h-[82px] w-full rounded-lg border border-border bg-bg-primary px-4 py-3 text-[13px] text-text-secondary overflow-y-auto"
-            dangerouslySetInnerHTML={{ __html: parseMarkdown(comment) || '<em class="text-text-muted">Nothing to preview</em>' }}
-          />
+          <div className="flex flex-col gap-3 rounded-lg border border-border bg-bg-primary px-4 py-4 text-[13px]">
+            <p className="font-semibold text-text-primary">Select an authority to seek approval from:</p>
+            <div className="flex items-center gap-3">
+              <select
+                value={selectedAdmin}
+                onChange={e => setSelectedAdmin(e.target.value)}
+                className="rounded-md border border-border-light bg-bg-card px-3 py-2 text-[13px] text-text-primary outline-none focus:border-brand w-64"
+              >
+                <option value="">-- Select Admin --</option>
+                {admins.map(a => (
+                  <option key={a.id} value={a.id}>{a.name}</option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={submitApproval}
+                disabled={submitting || !selectedAdmin}
+                className="rounded-md bg-brand px-5 py-2 text-[13px] font-bold text-white shadow-sm transition hover:bg-brand-dark disabled:opacity-50"
+              >
+                {submitting ? 'Requesting...' : 'Request Approval'}
+              </button>
+            </div>
+          </div>
         )}
 
         <div className="mt-3 flex items-center justify-between">
           <p className="text-[11px] text-text-muted">Shown as <strong className="text-text-secondary">ADMIN</strong>, not your name.</p>
-          <button
-            type="button"
-            onClick={submitComment}
-            disabled={submitting || !comment.trim()}
-            className="flex items-center gap-1.5 rounded-lg bg-black px-5 py-2.5 text-[13px] font-semibold text-white shadow-lg shadow-black/10 transition hover:bg-[#2e3132] disabled:opacity-50"
-          >
-            {submitting
-              ? <><Loader className="h-3.5 w-3.5 animate-spin" /> Posting…</>
-              : <><Send className="h-3.5 w-3.5" strokeWidth={2} /> Comment &amp; Resolve</>}
-          </button>
+          <div className="flex items-center gap-3">
+            {q.approval_status === 'pending' && (
+              <button
+                type="button"
+                onClick={markApprovalReceived}
+                disabled={submitting}
+                className="flex items-center gap-1.5 rounded-lg bg-orange-600 px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition hover:bg-orange-700 disabled:opacity-50"
+              >
+                <CheckCircle className="h-3.5 w-3.5" /> Mark Approval Received
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={submitComment}
+              disabled={submitting || !comment.trim()}
+              className="flex items-center gap-1.5 rounded-lg bg-black px-5 py-2.5 text-[13px] font-semibold text-white shadow-lg shadow-black/10 transition hover:bg-[#2e3132] disabled:opacity-50"
+            >
+              {submitting
+                ? <><Loader className="h-3.5 w-3.5 animate-spin" /> Posting…</>
+                : <><Send className="h-3.5 w-3.5" strokeWidth={2} /> Comment &amp; Resolve</>}
+            </button>
+          </div>
         </div>
       </div>
 

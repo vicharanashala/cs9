@@ -52,6 +52,7 @@ function QueriesManagementView({ searchQuery = '', onOpenQuery }) {
   const [filterKind, setFilterKind] = useState(location.state?.kind || '')
   const [filterId, setFilterId] = useState(location.state?.id || '')
   const [filterExpert, setFilterExpert] = useState(location.state?.expert || '')
+  const [filterApproval, setFilterApproval] = useState(location.state?.hasApproval || '')
 
   const [debouncedFilterId, setDebouncedFilterId] = useState(filterId)
 
@@ -64,7 +65,7 @@ function QueriesManagementView({ searchQuery = '', onOpenQuery }) {
     return () => clearTimeout(t)
   }, [searchQuery, filterId])
   
-  useEffect(() => { setPage(1) }, [debouncedSearch, filterStatus, filterKind, debouncedFilterId, filterExpert])
+  useEffect(() => { setPage(1) }, [debouncedSearch, filterStatus, filterKind, debouncedFilterId, filterExpert, filterApproval])
 
 
   const load = useCallback(async () => {
@@ -72,7 +73,7 @@ function QueriesManagementView({ searchQuery = '', onOpenQuery }) {
     try {
       const { questions, pagination: meta } = await fetchAdminQuestions({
         page, limit: PAGE_SIZE, search: debouncedSearch,
-        status: filterStatus, kind: filterKind, id: debouncedFilterId, hasExpertAnswer: filterExpert
+        status: filterStatus, kind: filterKind, id: debouncedFilterId, hasExpertAnswer: filterExpert, hasApproval: filterApproval
       })
       setItems(questions)
       setPagination(meta)
@@ -82,7 +83,7 @@ function QueriesManagementView({ searchQuery = '', onOpenQuery }) {
     } finally {
       setLoading(false)
     }
-  }, [page, debouncedSearch, filterStatus, filterKind, debouncedFilterId, filterExpert])
+  }, [page, debouncedSearch, filterStatus, filterKind, debouncedFilterId, filterExpert, filterApproval])
 
   useEffect(() => { load() }, [load])
 
@@ -142,6 +143,17 @@ function QueriesManagementView({ searchQuery = '', onOpenQuery }) {
               <option value="true">Expert Answered</option>
               <option value="false">No Expert</option>
             </select>
+            <div className="h-4 w-px bg-border-light" />
+            <select
+              value={filterApproval}
+              onChange={(e) => setFilterApproval(e.target.value)}
+              className="h-7 cursor-pointer bg-transparent px-2 text-[12px] font-medium text-text-primary outline-none pr-1"
+            >
+              <option value="">Any Approval</option>
+              <option value="true">Approval Pending</option>
+              <option value="approved">Approved</option>
+              <option value="false">No Approval</option>
+            </select>
           </div>
           
           <span className="rounded-full bg-bg-tertiary px-3 py-1.5 text-[12px] font-semibold text-text-muted">
@@ -190,6 +202,16 @@ function QueriesManagementView({ searchQuery = '', onOpenQuery }) {
                     {q.moderation_status && q.moderation_status !== 'approved' && (
                       <span className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase ${MOD_STYLE[q.moderation_status] || 'bg-gray-100 text-gray-600'}`}>
                         {q.moderation_status === 'pending' ? 'Under review' : q.moderation_status}
+                      </span>
+                    )}
+                    {q.approval_status === 'pending' && (
+                      <span className="flex items-center gap-1 rounded bg-orange-50 px-2 py-0.5 text-[10px] font-bold uppercase text-orange-700">
+                         Approval pending: {q.approval_requested_from_name}
+                      </span>
+                    )}
+                    {q.approval_status === 'approved' && (
+                      <span className="flex items-center gap-1 rounded bg-emerald-50 px-2 py-0.5 text-[10px] font-bold uppercase text-emerald-700">
+                         Approval received: {q.approval_requested_from_name}
                       </span>
                     )}
                     {q.is_pinned && (

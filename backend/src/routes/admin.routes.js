@@ -1,6 +1,8 @@
 import { Router } from 'express'
 import {
   adminCommentAndResolve,
+  adminSeekApproval,
+  adminMarkApprovalReceived,
   assignUserRole,
   createTag,
   createUser,
@@ -47,6 +49,8 @@ router.delete('/tags/:tagName', deleteTag)
 
 // Admin posts a response and resolves the question in one action.
 router.post('/questions/:questionId/resolve', adminCommentAndResolve)
+router.post('/questions/:questionId/seek-approval', adminSeekApproval)
+router.post('/questions/:questionId/approve-request', adminMarkApprovalReceived)
 
 // Admin exports a resolved question to the FAQ database after curation
 router.post('/questions/:questionId/export-faq', exportQuestionToFAQ)
