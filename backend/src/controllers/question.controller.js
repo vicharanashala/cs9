@@ -121,8 +121,17 @@ function isAdmin(req) {
 async function getRealNameByUserId(userIds) {
   const ids = [...new Set(userIds.filter(Boolean))]
   if (!ids.length) return {}
-  const users = await User.find({ user_id: { $in: ids } }).select('user_id name').lean()
-  return Object.fromEntries(users.map((u) => [u.user_id, u.name || 'Unknown']))
+  const [users, profiles] = await Promise.all([
+    User.find({ user_id: { $in: ids } }).select('user_id name').lean(),
+    UserProfile.find({ user_id: { $in: ids } }).select('user_id display_name').lean(),
+  ])
+  const nameById = Object.fromEntries(users.map((u) => [u.user_id, u.name || 'Unknown']))
+  for (const profile of profiles) {
+    if (profile.display_name) {
+      nameById[profile.user_id] = profile.display_name
+    }
+  }
+  return nameById
 }
 
 function canManage(req, question) {
