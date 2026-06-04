@@ -239,19 +239,25 @@ export async function resolveFlag(req, res, next) {
     flag.resolution_note = req.body.resolutionNote || ''
     await flag.save()
 
-    // Notify the reporter
+    // Notify the reporter — wording is explicitly about the REPORT (and which
+    // kind of content was reported), never the question itself, so it can't be
+    // misread as "an admin resolved your question".
+    const targetLabel =
+      flag.target_type === 'answer' ? 'answer'
+        : flag.target_type === 'comment' ? 'comment'
+          : 'question'
     const reporterBody =
       status === 'approved'
         ? req.body.action === 'no_action'
-          ? 'Your report was reviewed and the content was found to not violate guidelines.'
-          : 'Your report was upheld — action has been taken on the content.'
-        : 'Your report was reviewed and found not to violate community guidelines.'
+          ? `Your report on this ${targetLabel} was reviewed — it was found not to violate community guidelines, so no action was taken.`
+          : `Your report on this ${targetLabel} was upheld and the content has been actioned. Thanks for helping keep the community safe.`
+        : `Your report on this ${targetLabel} was reviewed and found not to violate community guidelines.`
 
     await Notification.create({
       recipient_id: flag.reported_by,
       actor_id: req.user.userId,
       type: 'flag_resolved',
-      title: 'Report reviewed',
+      title: 'Your report was reviewed',
       body: reporterBody,
       reference_id: flag.target_id,
       reference_type: flag.target_type,

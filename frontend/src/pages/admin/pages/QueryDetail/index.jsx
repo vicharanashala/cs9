@@ -421,9 +421,9 @@ function AdminQueryDetailView({ queryId, onBack }) {
         <div className="mb-3 flex flex-wrap items-center gap-2">
           <span className="font-mono text-[11px] font-bold text-text-muted">#{q.question_id?.slice(0, 8)}</span>
           <Badge className={q.kind === 'faq' ? 'bg-purple-50 text-purple-700' : 'bg-blue-50 text-blue-700'}>{q.kind || 'community'}</Badge>
-          <Badge className={STATUS_STYLE[q.status] || 'bg-gray-100 text-gray-600'}>{q.status}</Badge>
+          <Badge className={`${STATUS_STYLE[q.status] || 'bg-gray-100 text-gray-600'} ${q.moderation_status === 'pending' ? 'opacity-50' : ''}`}>{q.status}</Badge>
           {q.moderation_status && q.moderation_status !== 'approved' && (
-            <Badge className="bg-amber-50 text-amber-700">{q.moderation_status}</Badge>
+            <Badge className="bg-amber-50 text-amber-700">{q.moderation_status === 'pending' ? 'Under review' : q.moderation_status}</Badge>
           )}
           {q.is_anonymous && (
             <Badge className="bg-indigo-50 text-indigo-700"><VenetianMask className="mr-0.5 inline h-3 w-3" strokeWidth={2.2} /> Anonymous</Badge>

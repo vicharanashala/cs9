@@ -179,7 +179,7 @@ function QueriesManagementView({ searchQuery = '', onOpenQuery }) {
                     <span className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase ${q.kind === 'faq' ? 'bg-purple-50 text-purple-700' : 'bg-blue-50 text-blue-700'}`}>
                       {q.kind || 'community'}
                     </span>
-                    <span className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase ${statusClass(q.status)}`}>
+                    <span className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase ${statusClass(q.status)} ${q.moderation_status === 'pending' ? 'opacity-50' : ''}`}>
                       {q.status}
                     </span>
                     {q.is_anonymous && (
@@ -189,7 +189,7 @@ function QueriesManagementView({ searchQuery = '', onOpenQuery }) {
                     )}
                     {q.moderation_status && q.moderation_status !== 'approved' && (
                       <span className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase ${MOD_STYLE[q.moderation_status] || 'bg-gray-100 text-gray-600'}`}>
-                        {q.moderation_status}
+                        {q.moderation_status === 'pending' ? 'Under review' : q.moderation_status}
                       </span>
                     )}
                     {q.is_pinned && (
