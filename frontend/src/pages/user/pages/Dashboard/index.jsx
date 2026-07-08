@@ -193,7 +193,7 @@ function DashboardPage() {
 
         {/* Loading */}
         {loadingQueries && (
-          <div className="flex items-center gap-2 py-8 text-[13px] text-text-muted">
+          <div className="flex items-center gap-2 py-4 text-[13px] text-text-muted">
             <span className="h-4 w-4 animate-spin rounded-full border-2 border-border border-t-[#8c6a40]" />
             Searching…
           </div>
@@ -209,7 +209,7 @@ function DashboardPage() {
         )}
 
         {/* Cards */}
-        {!loadingQueries && filtered.map(query => (
+        {filtered.length > 0 && filtered.map(query => (
           <QuestionCard
             key={query.id}
             query={query}
